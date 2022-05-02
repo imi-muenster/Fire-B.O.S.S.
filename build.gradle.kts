@@ -47,6 +47,9 @@ dependencies {
     compileOnly("ch.qos.logback:logback-core:1.3.0-alpha14")
     implementation("org.jlib:jlib-awslambda-logback:1.0.0")
 
+    //PROCESSING DEPENDENCIES
+    implementation("org.apache.commons:commons-lang3:3.12.0")
+
 }
 
 tasks.war {
