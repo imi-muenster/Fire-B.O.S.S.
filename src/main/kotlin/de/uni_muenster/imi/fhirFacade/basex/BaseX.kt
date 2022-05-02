@@ -1,17 +1,12 @@
 package de.uni_muenster.imi.fhirFacade.basex
 
-import de.uni_muenster.imi.fhirFacade.exception.BaseXDatabaseNotFoundException
+import de.uni_muenster.imi.fhirFacade.fhir.addVersion
 import de.uni_muenster.imi.fhirFacade.fhir.encodeFromResource
 import de.uni_muenster.imi.fhirFacade.utils.Properties
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
-import org.basex.util.DateTime
 import org.hl7.fhir.instance.model.api.IBaseResource
-import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.Patient
 import org.slf4j.LoggerFactory
-import java.time.Instant
-import java.util.*
 
 
 class BaseX(SETTINGS: Properties) {
@@ -36,8 +31,7 @@ class BaseX(SETTINGS: Properties) {
         val id = resource.idElement.idPart
 
         if (!resource.idElement.hasVersionIdPart()) {
-            resource.setId(IdType(type, id, "1"))
-            resource.meta.lastUpdated = Date(System.currentTimeMillis())
+            resource.addVersion()
         }
         val version = resource.idElement.versionIdPart
 
@@ -52,18 +46,6 @@ class BaseX(SETTINGS: Properties) {
 
             session.add("${id}_$version", it.byteInputStream())
         }
-    }
-
-    fun updateResourceInBaseX(resource: IBaseResource) {
-        val type = resource.fhirType()
-        val id = resource.idElement.idPart
-
-        try {
-            session.execute("open $type")
-        } catch (e: Exception) {
-            throw BaseXDatabaseNotFoundException()
-        }
-
     }
 
     fun executeXQuery(xquery: String): String {
