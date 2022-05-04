@@ -1,6 +1,7 @@
 package de.uni_muenster.imi.fhirFacade.fhir
 
 import ca.uhn.fhir.context.FhirContext
+import de.uni_muenster.imi.fhirFacade.utils.UUIDHelper
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
@@ -49,8 +50,16 @@ fun decodeQueryResults(resultString: String): List<IBaseResource> {
     return result
 }
 
+fun getNewestVersionFromBundle(resources: List<IBaseResource>): IBaseResource? {
+    return resources.sortedWith(compareBy {it.idElement.versionIdPart.toInt()}).lastOrNull()
+}
+
 fun splitSearchResults(result: String): List<String> {
-    return StringUtils.substringsBetween(result, "<result>", "</result>").asList()
+    return try {
+        StringUtils.substringsBetween(result, "<result>", "</result>").asList()
+    } catch(e: Exception) {
+        listOf()
+    }
 }
 
 fun stripNamespaceFromXML(resource: String): String {
@@ -80,6 +89,18 @@ fun IBaseResource.addVersion() {
             "1"
         )
     )
+    this.meta.lastUpdated = Date(System.currentTimeMillis())
+}
+
+fun IBaseResource.setNewVersion(newVersion: String) {
+    this.setId(IdType(this.fhirType(), this.idElement.idPart, newVersion))
+    this.meta.versionId = newVersion
+    this.meta.lastUpdated = Date(System.currentTimeMillis())
+}
+
+fun IBaseResource.generateAndSetNewId() {
+    this.setId(IdType(this.fhirType(), UUIDHelper.getUID(), "1"))
+    this.meta.versionId = "1"
     this.meta.lastUpdated = Date(System.currentTimeMillis())
 }
 
