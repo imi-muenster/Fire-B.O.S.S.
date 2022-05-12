@@ -89,7 +89,7 @@ val config = listOf(
     VersionSetting("dstu2", false),
     VersionSetting("dstu3", false),
     VersionSetting("r4", true),
-    VersionSetting("r5", true)
+    VersionSetting("r5", false)
 )
 
 val generateResourceProviders : Task by tasks.creating() {
@@ -116,7 +116,7 @@ val packageBase = "de.uni_muenster.imi.fhirFacade.generated"
 
 fun generateSources(version: String) {
     val fhirContext: FhirContext
-    var packageSuffix: String = ""
+    var packageSuffix = ""
     if ("dstu2" == version) {
         fhirContext = FhirContext.forDstu2()
     } else if ("dstu3" == version) {
