@@ -16,7 +16,7 @@ Build the project to create a .war file. Deploy the file on a Tomcat server.
 The Server will be accessible from the URL `http://[base]/fhir/...`.
 
 ## REST
-FhirFacade is carefully modeled to be conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search] (http://hl7.org/fhir/search.html) specifications.
+FhirFacade is carefully modeled to conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search] (http://hl7.org/fhir/search.html) specifications.
 To understand how this facade operates read those specifications throughout.
 
 ## Class Generator
