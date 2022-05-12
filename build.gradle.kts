@@ -1,4 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Properties
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.tinder.parser.ResourceGeneratorUsingModel
 
 plugins {
     kotlin("jvm") version "1.6.20"
@@ -12,10 +15,22 @@ repositories {
     mavenCentral()
 }
 
+buildscript {
+    val hapi_version: String by project
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("ca.uhn.hapi.fhir:hapi-fhir:$hapi_version")
+        classpath("ca.uhn.hapi.fhir:hapi-fhir-base:$hapi_version")
+        classpath("ca.uhn.hapi.fhir:hapi-tinder-plugin:$hapi_version")
+    }
+}
+
 val hapi_version: String by project
 val ktor_version: String by project
-
-
 
 dependencies {
     // KOTLIN DEPENDENCIES //
@@ -29,6 +44,7 @@ dependencies {
     implementation("ca.uhn.hapi.fhir:hapi-fhir-client:$hapi_version")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-server:$hapi_version")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-jpaserver-base:$hapi_version")
+    implementation("ca.uhn.hapi.fhir:hapi-tinder-plugin:$hapi_version")
 
     // BASEX DEPENDENCIES //
     implementation("org.basex:basex:9.2.4")
@@ -66,4 +82,110 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
+
+data class VersionSetting(val version: String, val generate: Boolean)
+
+val config = listOf(
+    VersionSetting("dstu2", false),
+    VersionSetting("dstu3", false),
+    VersionSetting("r4", true),
+    VersionSetting("r5", true)
+)
+
+val generateResourceProviders : Task by tasks.creating() {
+    doLast {
+        for (conf in config) {
+            if (conf.generate == true) {
+                generateSources(conf.version)
+            }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir("${buildDir}/generated-sources")
+        }
+    }
+}
+
+val targetDirectory = "${buildDir}/generated-sources"
+val baseDir = "${projectDir}"
+val packageBase = "de.uni_muenster.imi.fhirFacade.generated"
+
+fun generateSources(version: String) {
+    val fhirContext: FhirContext
+    var packageSuffix: String = ""
+    if ("dstu2" == version) {
+        fhirContext = FhirContext.forDstu2()
+    } else if ("dstu3" == version) {
+        fhirContext = FhirContext.forDstu3()
+        packageSuffix = ".dstu3"
+    } else if ("r4" == version) {
+        fhirContext = FhirContext.forR4()
+        packageSuffix = ".r4"
+    } else if ("r5" == version) {
+        fhirContext = FhirContext.forR5()
+        packageSuffix = ".r5"
+    } else {
+        logger.error("Could not create context")
+        throw Exception()
+    }
+
+    val baseResourceNames: MutableList<String> = mutableListOf()
+
+    val p = Properties()
+    try {
+        p.load(fhirContext.version.fhirVersionPropertiesFile)
+    } catch (e: java.io.IOException) {
+        logger.error("Failed to load version property file", e)
+    }
+
+    logger.info("Property file contains: {}", p)
+
+    for (next in p.keys) {
+        val str = next as String
+
+        if (str.startsWith("resource.")) {
+            baseResourceNames.add(str.substring("resource.".length).toLowerCase())
+        }
+    }
+
+    if (fhirContext.version.version == ca.uhn.fhir.context.FhirVersionEnum.DSTU3) {
+        baseResourceNames.remove("conformance")
+    }
+
+    logger.info("Including the following resources: {}", baseResourceNames)
+
+    val packagePath = "${packageBase}${packageSuffix}"
+
+    val packageDirectoryBase = File(targetDirectory, packagePath
+        .replace(".", "${File.separatorChar}"))
+
+    packageDirectoryBase.mkdirs()
+
+    val gen = ResourceGeneratorUsingModel(version, baseDir)
+    gen.setBaseResourceNames(baseResourceNames)
+
+    try {
+        val template = "src/main/resources/vm/jpa_resource_provider.vm"
+        gen.parse()
+        gen.setFilenameSuffix("ResourceProvider")
+        gen.setTemplate(template)
+        gen.setTemplateFile(File(template))
+        gen.writeAll(packageDirectoryBase, null, packagePath)
+    } catch(e: Exception) {
+        logger.error("Failed to generate sources", e)
+    }
+}
+
+tasks.build {
+    dependsOn("generateResourceProviders")
+}
+
+tasks.compileKotlin {
+    dependsOn("generateResourceProviders")
+}
+
 
