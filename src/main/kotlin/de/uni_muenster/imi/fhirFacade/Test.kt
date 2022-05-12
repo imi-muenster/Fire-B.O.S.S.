@@ -1,5 +1,8 @@
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.jpa.rp.r5.AccountResourceProvider
 import ca.uhn.fhir.rest.annotation.Search
+import ca.uhn.fhir.rest.param.StringAndListParam
+import ca.uhn.fhir.rest.param.StringParam
 import de.uni_muenster.imi.fhirFacade.fhir.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.decodeQueryResults
 import de.uni_muenster.imi.fhirFacade.fhir.encodeFromResource
@@ -11,6 +14,7 @@ import org.hl7.fhir.r4.formats.ParserType
 import org.hl7.fhir.r4.model.*
 import java.io.File
 import java.math.BigDecimal
+import java.util.*
 
 
 private val ctx = FhirContext.forR4()
@@ -18,7 +22,11 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 
 
 fun main() {
-    testQueryDecoding()
+    val param = StringAndListParam()
+    param.addAnd(StringParam("test"))
+
+    println("debug")
+
 }
 
 
