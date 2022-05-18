@@ -2,18 +2,30 @@ package de.uni_muenster.imi.fhirFacade.basex
 
 object QuerySnippets {
 
-    fun eqDateTime(path: String, dateTime: String) =
-        "(xs:dateTime(\$x/../$path) = xs:dateTime('$dateTime'))"
+    /** PREFIXES **/
 
-    fun eqDate(path: String, date: String, pathIsDateTime: Boolean = true) =
-        if (pathIsDateTime) {
-            "(xs:date(substring-before(\$x/../$path), 'T') = xs:date('$date'))"
-        } else {
-            "(xs:date(\$x/../$path) = xs:date('$date'))"
-        }
+    fun prefixEq(searchParameter: String, value: String) =
+        "($searchParameter = $value)"
 
-    fun neDateTime(path: String, dateTime: String) =
-        "(xs:dateTime(\$x/../$path) > xs:dateTime('$dateTime') or " +
-        "xs:dateTime(\$x/../$path) < xs:dateTime('$dateTime'))"
+    fun prefixNe(searchParameter: String, value: String) =
+        "($searchParameter != $value)"
+
+    fun prefixGt(searchParameter: String, value: String) =
+        "($value > $searchParameter)"
+
+    fun prefixLt(searchParameter: String, value: String) =
+        "($value < $searchParameter)"
+
+    fun prefixGe(searchParameter: String, value: String) =
+        "($value >= $searchParameter)"
+
+    fun prefixLe(searchParameter: String, value: String) =
+        "($value <= $searchParameter)"
+
+    fun prefixSa(searchParameter: String, value: String) =
+        prefixGt(searchParameter, value)
+
+    fun prefixEb(searchParameter: String, value: String) =
+        prefixLt(searchParameter, value)
 
 }
