@@ -3,10 +3,7 @@ import ca.uhn.fhir.jpa.rp.r5.AccountResourceProvider
 import ca.uhn.fhir.rest.annotation.Search
 import ca.uhn.fhir.rest.param.StringAndListParam
 import ca.uhn.fhir.rest.param.StringParam
-import de.uni_muenster.imi.fhirFacade.fhir.decodeFromString
-import de.uni_muenster.imi.fhirFacade.fhir.decodeQueryResults
-import de.uni_muenster.imi.fhirFacade.fhir.encodeFromResource
-import de.uni_muenster.imi.fhirFacade.fhir.incrementVersion
+import de.uni_muenster.imi.fhirFacade.fhir.*
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -22,8 +19,7 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 
 
 fun main() {
-    val param = StringAndListParam()
-    param.addAnd(StringParam("test"))
+    val classes = getAllResourceProviders()
 
     println("debug")
 
