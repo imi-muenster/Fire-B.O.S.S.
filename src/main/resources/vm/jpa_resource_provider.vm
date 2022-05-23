@@ -21,9 +21,9 @@ import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.api.SearchContainedModeEnum;
-import de.uni_muenster.imi.fhirFacade.fhir.PlainProvider;
+import de.uni_muenster.imi.fhirFacade.fhir.ResourceProviderTemplate;
 
-public class ${className}ResourceProvider extends PlainProvider {
+public class ${className}ResourceProvider extends ResourceProviderTemplate<${className}> {
 
     public ${className}ResourceProvider() {
         super(new ${className}());
