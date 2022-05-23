@@ -1,8 +1,12 @@
 package de.uni_muenster.imi.fhirFacade.fhir
 
+import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.i18n.Msg
+import ca.uhn.fhir.jpa.util.jsonpatch.JsonPatchUtils
+import ca.uhn.fhir.jpa.util.xmlpatch.XmlPatchUtils
 import ca.uhn.fhir.rest.annotation.*
 import ca.uhn.fhir.rest.api.MethodOutcome
+import ca.uhn.fhir.rest.api.PatchTypeEnum
 import ca.uhn.fhir.rest.param.DateParam
 import ca.uhn.fhir.rest.param.DateRangeParam
 import ca.uhn.fhir.rest.server.IResourceProvider
@@ -11,8 +15,9 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.OperationOutcome
 
-abstract class PlainProvider<T : IBaseResource>(private val resourceType: T): IResourceProvider {
+abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceType: T): IResourceProvider {
 
     private val fhirType = resourceType::class.simpleName!!
 
@@ -22,7 +27,6 @@ abstract class PlainProvider<T : IBaseResource>(private val resourceType: T): IR
 
     //TODO: Read FHIR Documentation on how these functions should behave
     //TODO: Conditionals?
-    //TODO: Patching? No logic support in HAPI. Has to be implemented.
     //TODO: Validation has to be made on Resource level
     //TODO: Transactional not implemented in HAPI.
 
@@ -107,6 +111,30 @@ abstract class PlainProvider<T : IBaseResource>(private val resourceType: T): IR
             baseX.executeXQuery(
                 BaseXQueries.deleteByIdAndVersion(this.fhirType, theId.idPart, theId.versionIdPart)
             )
+        }
+    }
+
+    @Patch
+    fun patch(@IdParam theId: IdType, thePatchType: PatchTypeEnum, @ResourceParam theBody: String): OperationOutcome {
+        val resourceToPatch = getResourceById(theId)
+        if (resourceToPatch != null) {
+
+            if (thePatchType == PatchTypeEnum.JSON_PATCH) {
+                val updatedResource = JsonPatchUtils.apply(FhirContext.forR4(), resourceToPatch, theBody)
+                update(theId, updatedResource.asJSON()) //TODO: Redundant Conversion but update needs string (Write separate method?)
+            }
+            else if (thePatchType == PatchTypeEnum.XML_PATCH) {
+                val updatedResource = XmlPatchUtils.apply(FhirContext.forR4(), resourceToPatch, theBody)
+                update(theId, updatedResource.asXML())
+            }
+
+            return OperationOutcome().apply {
+                text.divAsString = "<div>OK</div>"
+            }
+        } else {
+            return OperationOutcome().apply {
+                text.divAsString = "<div>Bad Request</div>"
+            }
         }
     }
 
