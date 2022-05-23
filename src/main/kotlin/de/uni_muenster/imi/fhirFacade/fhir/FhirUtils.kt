@@ -170,6 +170,14 @@ fun IBaseResource.hasVersionIdPart(): Boolean {
     return this.idElement!!.hasVersionIdPart()
 }
 
+fun IBaseResource.asXML(): String {
+    return encodeFromResource(this, ParserType.XML)!!
+}
+
+fun IBaseResource.asJSON(): String {
+    return encodeFromResource(this, ParserType.JSON)!!
+}
+
 fun DateRangeParam.completeInformation() {
     this.fillInRange()
     this.convertToDateTime()
