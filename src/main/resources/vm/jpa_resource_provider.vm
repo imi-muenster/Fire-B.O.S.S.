@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.api.SearchContainedModeEnum;
 import de.uni_muenster.imi.fhirFacade.fhir.ResourceProviderTemplate;
+import de.uni_muenster.imi.fhirFacade.basex.QueryGenerator;
 
 public class ${className}ResourceProvider extends ResourceProviderTemplate<${className}> {
 
@@ -132,7 +133,7 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			){
 		try {
 			SearchParameterMap paramMap = new SearchParameterMap();
-			Map<String, String> pathMap = new HashMap<String, String>();
+			HashMap<String, String> pathMap = new HashMap<String, String>();
 
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_FILTER, theFtFilter);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_CONTENT, theFtContent);
@@ -159,6 +160,9 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			paramMap.setSummaryMode(theSummaryMode);
 			paramMap.setSearchTotalMode(theSearchTotalMode);
 			paramMap.setSearchContainedMode(theSearchContainedMode);
+
+            QueryGenerator gen = new QueryGenerator();
+            gen.generateQuery(paramMap, pathMap);
 
 			return new ArrayList<>();
 		} finally {
