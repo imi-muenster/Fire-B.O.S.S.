@@ -1,17 +1,18 @@
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.jpa.rp.r5.AccountResourceProvider
 import ca.uhn.fhir.rest.annotation.Search
-import ca.uhn.fhir.rest.param.StringAndListParam
-import ca.uhn.fhir.rest.param.StringParam
+import ca.uhn.fhir.rest.param.DateParam
 import de.uni_muenster.imi.fhirFacade.fhir.*
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
+import org.elasticsearch.common.time.DateFormatter
 import org.hl7.fhir.instance.model.api.IBaseResource
-import org.hl7.fhir.r4.formats.ParserType
 import org.hl7.fhir.r4.model.*
+import org.joda.time.format.ISODateTimeFormat
 import java.io.File
 import java.math.BigDecimal
-import java.util.*
+import java.sql.Date
+import java.text.DateFormat
+import javax.xml.bind.DatatypeConverter
 
 
 private val ctx = FhirContext.forR4()
@@ -19,9 +20,9 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 
 
 fun main() {
-    val classes = getAllResourceProviders()
-
-    println("debug")
+    val cal = DatatypeConverter.parseDateTime("2010-01-01T12:00:00.999")
+    val date = cal.time
+    print ("")
 
 }
 
