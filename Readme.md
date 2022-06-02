@@ -15,6 +15,11 @@ Build the project to create a .war file. Deploy the file on a Tomcat server.
 
 The Server will be accessible from the URL `http://[base]/fhir/...`.
 
+## Setup test server
+To setup a test server one can easily use a local BaseX docker container. Look [here](https://docs.basex.org/wiki/Docker) how to set it up correctly.
+After that adjust the `default.properties` file and start the FHIR facade locally. Download the example FHIR resources from the [official](https://hl7.org/fhir/downloads.html) website.
+Put them into `src/main/resources/fhirResources/example-json` and run the main method of `ExampleResources` in `src/main/kotlin/utils` to add all of them to the BaseX database.
+
 ## REST
 FhirFacade is carefully modeled to conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search](http://hl7.org/fhir/search.html) specifications.
 To understand how this facade operates read those specifications throughout.
@@ -36,3 +41,5 @@ val config = listOf(
 In its current state the FhirFacade is build to support R4 specifically.
 
 ## How does it work?
+
+### Query Generator
