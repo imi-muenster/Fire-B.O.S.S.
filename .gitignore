@@ -2,3 +2,4 @@
 .idea
 settings
 build
+src/main/resources/fhirResources
