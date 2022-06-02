@@ -35,10 +35,10 @@ class DateUtil(date: DateParam) {
         when (theDate.precision) {
             TemporalPrecisionEnum.YEAR -> {
                 dateRange = DateRange(
-                    getMaxDate(
+                    getMinDate(
                         year = theDate.getYear()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear()
                     )
                 )
@@ -49,7 +49,7 @@ class DateUtil(date: DateParam) {
                         year = theDate.getYear(),
                         month = theDate.getMonth()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear(),
                         month = theDate.getMonth()
                     )
@@ -62,7 +62,7 @@ class DateUtil(date: DateParam) {
                         month = theDate.getMonth(),
                         day = theDate.getDayOfMonth()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear(),
                         month = theDate.getMonth(),
                         day = theDate.getDayOfMonth()
@@ -78,7 +78,7 @@ class DateUtil(date: DateParam) {
                         hours = theDate.getHours(),
                         minutes = theDate.getMinutes()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear(),
                         month = theDate.getMonth(),
                         day = theDate.getDayOfMonth(),
@@ -97,7 +97,7 @@ class DateUtil(date: DateParam) {
                         minutes = theDate.getMinutes(),
                         seconds = theDate.getSeconds()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear(),
                         month = theDate.getMonth(),
                         day = theDate.getDayOfMonth(),
@@ -118,7 +118,7 @@ class DateUtil(date: DateParam) {
                         seconds = theDate.getSeconds(),
                         millis = theDate.getMillis()
                     ),
-                    getMinDate(
+                    getMaxDate(
                         year = theDate.getYear(),
                         month = theDate.getMonth(),
                         day = theDate.getDayOfMonth(),
@@ -140,9 +140,9 @@ class DateUtil(date: DateParam) {
                            seconds: Int? = null,
                            millis: Int? = null
     ): String {
-        return "$year:" +
-                "${"%02d".format(month ?: MAX_MONTH)}:" +
-                "${"%02d".format(day ?: getMaxDayForMonth(month ?: MAX_MONTH))}:" +
+        return "$year-" +
+                "${"%02d".format(month ?: MAX_MONTH)}-" +
+                "%02d".format(day ?: getMaxDayForMonth(month ?: MAX_MONTH)) +
                 "T" +
                 "${"%02d".format(hours ?: MAX_HOURS)}:" +
                 "${"%02d".format(minutes ?: MAX_MINUTES)}:" +
@@ -158,9 +158,9 @@ class DateUtil(date: DateParam) {
                            seconds: Int? = null,
                            millis: Int? = null
     ): String {
-        return "$year:" +
-                "${"%02d".format(month ?: MIN_MONTH)}:" +
-                "${"%02d".format(day ?: MIN_DAYS)}:" +
+        return "$year-" +
+                "${"%02d".format(month ?: MIN_MONTH)}-" +
+                "%02d".format(day ?: MIN_DAYS) +
                 "T" +
                 "${"%02d".format(hours ?: MIN_HOURS)}:" +
                 "${"%02d".format(minutes ?: MIN_MINUTES)}:" +
@@ -188,7 +188,7 @@ class DateUtil(date: DateParam) {
         val date = this.value
         return Calendar.getInstance().apply {
             time = date
-        }.get(Calendar.MONTH)
+        }.get(Calendar.MONTH) + 1 //JANUARY = 0
     }
 
     private fun DateParam.getDayOfMonth(): Int {
