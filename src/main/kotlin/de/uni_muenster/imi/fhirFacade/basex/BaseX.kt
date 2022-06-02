@@ -1,7 +1,7 @@
 package de.uni_muenster.imi.fhirFacade.basex
 
 import de.uni_muenster.imi.fhirFacade.fhir.addVersion
-import de.uni_muenster.imi.fhirFacade.fhir.encodeFromResource
+import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
 import de.uni_muenster.imi.fhirFacade.utils.Properties
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException

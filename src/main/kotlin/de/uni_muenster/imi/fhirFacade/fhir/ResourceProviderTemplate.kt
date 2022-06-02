@@ -13,6 +13,9 @@ import ca.uhn.fhir.rest.server.IResourceProvider
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
+import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
+import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
+import de.uni_muenster.imi.fhirFacade.fhir.helper.getNewestVersionFromBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.OperationOutcome

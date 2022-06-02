@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.uni_muenster.imi.fhirFacade.fhir.helper
 
 import ca.uhn.fhir.context.FhirContext
 import org.apache.commons.lang3.StringUtils
