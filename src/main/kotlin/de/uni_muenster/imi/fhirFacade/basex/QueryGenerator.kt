@@ -9,6 +9,8 @@ import de.uni_muenster.imi.fhirFacade.fhir.getSearchParameterMap
 import de.uni_muenster.imi.fhirFacade.fhir.helper.DateUtil
 import de.uni_muenster.imi.fhirFacade.fhir.helper.getApproximationRange
 import de.uni_muenster.imi.fhirFacade.fhir.helper.getSignificantRange
+import java.util.*
+import kotlin.collections.HashMap
 
 class QueryGenerator {
 
@@ -42,7 +44,7 @@ class QueryGenerator {
             result += "${handleBaseParameter(theParam, paramName)} or "
         }
 
-        result.substring(0, result.lastIndexOf(" or "))
+        result = result.substring(0, result.lastIndexOf(" or "))
 
         return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
             "#SNIPPETS", result
@@ -55,7 +57,7 @@ class QueryGenerator {
                 handleNumberParam(theParam as NumberParam, paramName)
             }
             DateParam::class.java -> {
-                ""
+                handleDateParam(theParam as DateParam, paramName)
             }
             DateRangeParam::class.java -> {
                 "" //TODO: I dont think this will ever appear here
@@ -129,37 +131,44 @@ class QueryGenerator {
         }
     }
 
-    private fun handleDateParam(theParam: DateParam, paramName: String) {
+    private fun handleDateParam(theParam: DateParam, paramName: String): String {
         val util = DateUtil(theParam)
 
         when (theParam.prefix) {
             ParamPrefixEnum.APPROXIMATE -> {
-
+                return ""
             }
             ParamPrefixEnum.GREATERTHAN -> {
+                return ""
 
             }
             ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
+                return ""
 
             }
             ParamPrefixEnum.LESSTHAN -> {
-
+                return ""
             }
             ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
-
+                return ""
             }
             ParamPrefixEnum.EQUAL, null /* e.g. ?[parameter]=2022-01-01 */ -> {
+                //TODO: Equal prefix creates two lists (possible error in HAPI?)
                 val range = util.dateRange
-
+                return QuerySnippets.DateSnippets.catchDateProperties(paramName) +
+                        QuerySnippets.DateSnippets.EQUAL(paramName, range)
             }
             ParamPrefixEnum.NOT_EQUAL -> {
-
+                return ""
             }
             ParamPrefixEnum.STARTS_AFTER -> {
-
+                return ""
             }
             ParamPrefixEnum.ENDS_BEFORE -> {
-
+                return ""
+            }
+            else -> {
+                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
             }
         }
     }
@@ -167,13 +176,63 @@ class QueryGenerator {
 
 
     fun mapPathToXPath(path: String): String {
-        if (true) { //TODO: Add correct condition
-            //TODO: Special path handling (or, and, where, exists, etc.)
-            return ""
-        } else {
-            //Normal Path handling (. separated)
-            return path.split(".").joinToString("/")
+        //TODO: First check for "|" or "and", split and handle parts recursively (?), connect with "where ..."
+        //Special path handling
+        return if (path.contains("where")) {
+            handlePathWithWhere(path)
+        } else if (path.contains(" as ") || path.contains(".as(")) {
+            handlePathWithAs(path)
+        } else { //Normal Path handling (. separated)
+            path.split(".").joinToString("/")
         }
     }
 
+    private fun handlePathWithWhere(path: String): String {
+        val partBefore = path.substringBefore(".where")
+        val partWhere = path.substringAfter("$partBefore.")
+
+        if (partWhere.contains("resolve()")) {
+            val resolveType = partWhere.substringAfter("resolve() is ")
+            //TODO: Evaluate: with or without /.. at the end. Should be without as the reference is the important bit
+            return "${partBefore.split(".").joinToString("/")}/reference[contains(@value, \"$resolveType\")]"
+        } else {
+            val partAfter = partWhere.substringAfter(".", "")
+
+            //looks like this: where(property='value')
+            val property = partWhere
+                .substringAfter("(")
+                .substringBefore("=")
+            val value = partWhere
+                .substringAfter("='")
+                .substringBefore("')")
+
+            return "${partBefore.split(".").joinToString("/")}/$property[contains(@value, \"$value\")]/.." +
+                    if (partAfter.isNotEmpty()) "/$partAfter" else ""
+        }
+    }
+
+    private fun handlePathWithAs(path: String): String {
+        val partBefore: String
+        val partAfter: String
+        if (path.contains(" as ")) {
+            partBefore = path.substringBefore(" as ")
+            partAfter = path
+                .substringAfter(" as ")
+                .capitalize()
+        } else {
+            partBefore = path.substringBefore(".as(")
+            partAfter = path
+                .substringAfter(".as(")
+                .substringBefore(")")
+                .capitalize()
+        }
+        return "${partBefore.split(".").joinToString("/")}$partAfter"
+    }
+
+    private fun String.capitalize(): String {
+        return this.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault())
+            else it.toString()
+        }
+    }
 }
