@@ -1,18 +1,16 @@
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.annotation.Search
-import ca.uhn.fhir.rest.param.DateParam
+import de.uni_muenster.imi.fhirFacade.basex.QueryGenerator
 import de.uni_muenster.imi.fhirFacade.fhir.*
+import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
+import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
+import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
-import org.elasticsearch.common.time.DateFormatter
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.*
-import org.joda.time.format.ISODateTimeFormat
 import java.io.File
 import java.math.BigDecimal
-import java.sql.Date
-import java.text.DateFormat
-import javax.xml.bind.DatatypeConverter
 
 
 private val ctx = FhirContext.forR4()
@@ -20,10 +18,9 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 
 
 fun main() {
-    val cal = DatatypeConverter.parseDateTime("2010-01-01T12:00:00.999")
-    val date = cal.time
-    print ("")
-
+    val path = "Condition.abatement.as(string)"
+    val gen = QueryGenerator()
+    println(gen.mapPathToXPath(path))
 }
 
 
