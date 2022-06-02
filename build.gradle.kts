@@ -107,6 +107,9 @@ sourceSets {
         java {
             srcDir("${buildDir}/generated-sources")
         }
+        resources {
+            exclude("fhirResources")
+        }
     }
 }
 
