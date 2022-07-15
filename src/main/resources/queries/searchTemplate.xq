@@ -6,7 +6,7 @@ let $result :=
 
   #OPTIONAL_SEARCHPARAMETERS
 
-  return $x
+  return element result {$x}
 }
 </results>
 
