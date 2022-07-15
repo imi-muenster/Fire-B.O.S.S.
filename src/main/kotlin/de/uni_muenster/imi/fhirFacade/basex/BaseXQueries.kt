@@ -28,10 +28,13 @@ object BaseXQueries {
         .replace("#END_DATETIME", endDateTime)
 
     fun performSearch(type: String, constantConditions: String, optionalSearchparameters: String)
-        = readFile("searchTemplate.xq")
-        .replace("#TYPE", type)
-        .replace("#CONSTANT_CONDITIONS", constantConditions)
-        .replace("#OPTIONAL_SEARCHPARAMETERS", optionalSearchparameters)
+        = getDateFunctions() +
+        readFile("searchTemplate.xq")
+            .replace("#TYPE", type)
+            .replace("#CONSTANT_CONDITIONS", constantConditions)
+            .replace("#OPTIONAL_SEARCHPARAMETERS", optionalSearchparameters)
+
+    fun getDateFunctions() = readFile("dateFunctions.xq")
 
     private fun readFile(filename: String): String {
         val query = javaClass.classLoader
