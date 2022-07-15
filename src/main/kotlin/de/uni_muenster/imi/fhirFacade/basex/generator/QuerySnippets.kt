@@ -212,4 +212,21 @@ object QuerySnippets {
             ")"
     }
 
+    object UriSnippets {
+        fun searchForUriExact(searchParameterName: String, uri: String) =
+            "(" +
+                "( \$$searchParameterName[fn:matches(@value, \"$uri\")] )" +
+            ")"
+
+        fun searchForUriAbove(searchParameterName: String, uri: String) =
+            "(" +
+                "( \$$searchParameterName[contains(\"$uri\", @value)] )" +
+            ")"
+
+        fun searchForUriBelow(searchParameterName: String, uri: String) =
+            "(" +
+                "( \$$searchParameterName[starts-with(@value, \"$uri\")] )" +
+            ")"
+    }
+
 }

@@ -86,7 +86,7 @@ class QueryGenerator {
                 handleQuantityParam(theParam as QuantityParam, paramName)
             }
             UriParam::class.java -> {
-                ""
+                handleURIParam(theParam as UriParam, paramName)
             }
             SpecialParam::class.java -> {
                 ""
@@ -264,5 +264,21 @@ class QueryGenerator {
             query += " and ${QuerySnippets.QuantitySnippets.searchForCodeWithoutSystem(paramName, theParam.units)}"
         }
         return "($query)"
+    }
+
+    private fun handleURIParam(theParam: UriParam, paramName: String): String {
+        //TODO: :urn ?
+        return if (theParam.qualifier != null) {
+            when (theParam.qualifier) {
+                UriParamQualifierEnum.ABOVE -> {
+                    QuerySnippets.UriSnippets.searchForUriAbove(paramName, theParam.value)
+                }
+                UriParamQualifierEnum.BELOW -> {
+                    QuerySnippets.UriSnippets.searchForUriBelow(paramName, theParam.value)
+                }
+            }
+        } else {
+            QuerySnippets.UriSnippets.searchForUriExact(paramName, theParam.value)
+        }
     }
 }
