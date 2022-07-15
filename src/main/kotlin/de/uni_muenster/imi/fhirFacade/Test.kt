@@ -1,6 +1,5 @@
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.annotation.Search
-import de.uni_muenster.imi.fhirFacade.basex.QueryGenerator
 import de.uni_muenster.imi.fhirFacade.fhir.*
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
@@ -18,9 +17,7 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 
 
 fun main() {
-    val path = "Condition.abatement.as(string)"
-    val gen = QueryGenerator()
-    println(gen.mapPathToXPath(path))
+
 }
 
 
