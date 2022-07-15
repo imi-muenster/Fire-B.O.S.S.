@@ -13,6 +13,17 @@ basex.password=""
 ```
 Build the project to create a .war file. Deploy the file on a Tomcat server.
 
+Adjust the server.xml configuration to allow certain query characters.
+
+Change 
+```xml
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
+```
+to 
+```xml
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" relaxedQueryChars='^{}[]|&quot;' />
+```
+
 The Server will be accessible from the URL `http://[base]/fhir/...`.
 
 ## Setup test server
