@@ -12,6 +12,7 @@ import ca.uhn.fhir.rest.param.DateRangeParam
 import ca.uhn.fhir.rest.server.IResourceProvider
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
+import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
@@ -23,9 +24,12 @@ import org.hl7.fhir.r4.model.OperationOutcome
 abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceType: T): IResourceProvider {
 
     private val fhirType = resourceType::class.simpleName!!
-
     override fun getResourceType(): Class<out IBaseResource> {
         return resourceType::class.java
+    }
+
+    fun getBaseXInstance(): BaseX {
+        return baseX
     }
 
     //TODO: Read FHIR Documentation on how these functions should behave
@@ -162,12 +166,16 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         //TODO: Implement
     }
 
+    fun getResourceName(): String {
+        return this.fhirType
+    }
+
     private fun getResourceForIdWithVersion(theId: IdType): IBaseResource? {
-        return decodeFromString(
+        return decodeQueryResults(
             baseX.executeXQuery(
                 BaseXQueries.getByIdAndVersion(this.fhirType, theId.idPart, theId.versionIdPart)
             )
-        )
+        )[0]
     }
 
     private fun getResourcesForId(theId: IdType): List<IBaseResource> {

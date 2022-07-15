@@ -21,8 +21,11 @@ import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.api.SearchContainedModeEnum;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import de.uni_muenster.imi.fhirFacade.fhir.ResourceProviderTemplate;
-import de.uni_muenster.imi.fhirFacade.basex.QueryGenerator;
+import de.uni_muenster.imi.fhirFacade.basex.generator.QueryGenerator;
+import de.uni_muenster.imi.fhirFacade.basex.BaseX;
+import de.uni_muenster.imi.fhirFacade.fhir.helper.FhirUtilKt;
 
 public class ${className}ResourceProvider extends ResourceProviderTemplate<${className}> {
 
@@ -31,7 +34,7 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
     }
 
 	@Search(allowUnknownParams=true)
-	public List<${className}> search(
+	public List<IBaseResource> search(
 			javax.servlet.http.HttpServletRequest theServletRequest,
 			javax.servlet.http.HttpServletResponse theServletResponse,
 
@@ -133,7 +136,7 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			){
 		try {
 			SearchParameterMap paramMap = new SearchParameterMap();
-			HashMap<String, String> pathMap = new HashMap<String, String>();
+			HashMap<String, String> pathMap = new HashMap();
 
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_FILTER, theFtFilter);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_CONTENT, theFtContent);
@@ -161,10 +164,15 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			paramMap.setSearchTotalMode(theSearchTotalMode);
 			paramMap.setSearchContainedMode(theSearchContainedMode);
 
+            BaseX baseX = getBaseXInstance();
             QueryGenerator gen = new QueryGenerator();
-            gen.generateQuery(paramMap, pathMap);
 
-			return new ArrayList<>();
+            return FhirUtilKt.decodeQueryResults(
+                baseX.executeXQuery(
+                        gen.generateQuery(paramMap, pathMap, this.getResourceName())
+                )
+            );
+
 		} finally {
 
 		}
