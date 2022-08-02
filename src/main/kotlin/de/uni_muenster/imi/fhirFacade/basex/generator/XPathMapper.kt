@@ -4,10 +4,12 @@ import java.util.*
 
 object XPathMapper {
 
+
     fun mapPathToXPath(path: String): String {
-        //TODO: First check for "|" or "and", split and handle parts recursively (?), connect with "where ..."
         //Special path handling
-        return if (path.contains("where")) {
+        return if (path.contains(" | ")) {
+            "(${handlePathWithOr(path).joinToString(", ")})"
+        } else if (path.contains("where")) {
             handlePathWithWhere(path)
         } else if (path.contains(" as ") || path.contains(".as(")) {
             handlePathWithAs(path)
@@ -22,12 +24,26 @@ object XPathMapper {
             .joinToString("/")
     }
 
+    private fun removeBracketsAroundPath(path: String): String {
+        return path.substringAfter("(").substringBeforeLast(")")
+    }
+
+    private fun handlePathWithOr(path: String): MutableList<String> {
+        val paths = mutableListOf<String>()
+        path.split("|").forEach {
+            val mappedPath = mapPathToXPath(removeBracketsAroundPath(it))
+            paths.add(mappedPath)
+
+        }
+        return paths
+    }
+
     private fun handlePathWithWhere(path: String): String {
         val partBefore = path.substringBefore(".where")
         val partWhere = path.substringAfter("$partBefore.")
 
         if (partWhere.contains("resolve()")) {
-            val resolveType = partWhere.substringAfter("resolve() is ")
+            val resolveType = partWhere.substringAfter("resolve() is ").substringBefore(")")
             //TODO: Evaluate: with or without /.. at the end. Should be without as the reference is the important bit
             return "${partBefore.split(".").joinToString("/")}/reference[contains(@value, \"$resolveType\")]"
         } else {
