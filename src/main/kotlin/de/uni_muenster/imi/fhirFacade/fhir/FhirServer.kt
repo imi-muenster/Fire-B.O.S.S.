@@ -9,14 +9,17 @@ import mu.KotlinLogging
 import javax.servlet.ServletException
 import javax.servlet.annotation.WebServlet
 
-private lateinit var settings: Properties
-lateinit var baseX: BaseX
 
 /**
  * Main Servlet. Main Context is initialized here.
  */
 @WebServlet(urlPatterns = ["/fhir/*"], displayName = "FHIR Server")
 class FhirServer: RestfulServer() {
+
+    companion object {
+        lateinit var baseX: BaseX
+        lateinit var settings: Properties
+    }
 
     private val log = KotlinLogging.logger {  }
     private val serialVersionUID = 1L
