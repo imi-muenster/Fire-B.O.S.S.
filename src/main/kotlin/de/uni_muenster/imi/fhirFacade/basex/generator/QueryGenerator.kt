@@ -6,27 +6,41 @@ import ca.uhn.fhir.model.api.IQueryParameterType
 import ca.uhn.fhir.rest.param.*
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException
 import ca.uhn.fhir.rest.server.exceptions.NotImplementedOperationException
+import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
 import de.uni_muenster.imi.fhirFacade.basex.generator.XPathMapper.mapPathToXPath
 import de.uni_muenster.imi.fhirFacade.fhir.getSearchParameterMap
+import de.uni_muenster.imi.fhirFacade.fhir.helper.PathMapUtil
 import de.uni_muenster.imi.fhirFacade.fhir.helper.SignificanceHelper
 import org.apache.commons.lang.StringUtils
-import javax.management.Query
+import org.hl7.fhir.instance.model.api.IBaseResource
 import kotlin.collections.HashMap
 
 class QueryGenerator {
+    //TODO: Create Error code register
+
+    /* TODO:
+        Improve chaining: Currently it just uses the parameterName from the query.
+        However the path is often different from the parameter name. (e.g. Patient?organization -> Patient.managingOrganization)
+        The Path from paramPath could be used (see _has Query). However the Resource type is only known at Query Runtime.
+        Another way could be to keep track of all possible references for a field and pass every possible path to the
+        chained Query
+     */
+
 
     fun generateQuery(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
-        //TODO: Process constants
-
-        //TODO: Process _has and _id
-
-        //TODO: Process different optional ParamTypes and create Queries from Snippets accordingly
         val searchParameterPart = handleSearchParameterMap(parameterMap.getSearchParameterMap(), pathMap)
-        //TODO: Process result Parameters
-        val testQuery = BaseXQueries.performSearch(fhirType, "", searchParameterPart)
+        //TODO: Process result specific Parameters
+        val testQuery = BaseXQueries.performSearch(fhirType, searchParameterPart)
 
         return testQuery
+    }
+
+    fun getHistoryForType(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
+        val searchParameterMap = handleSearchParameterMap(parameterMap.getSearchParameterMap(), pathMap)
+
+        return QuerySnippets.serverHistoryResourcePart(fhirType)
+            .replace("#OPTIONALSEARCHPARAMETERS", searchParameterMap)
     }
 
     private fun handleSearchParameterMap(theMap: HashMap<String, List<List<IQueryParameterType>>>,
@@ -43,20 +57,42 @@ class QueryGenerator {
     }
 
     private fun handleListEntry(paramName: String, paramPath: String, theList: List<IQueryParameterType>): String {
-        var result = ""
+            var result = ""
 
-        theList.forEachIndexed { index, theParam ->
-            if (index == 0) {
-                result += handleBaseParameter(theParam, paramName)
-            } else {
-                result += " or ${handleBaseParameter(theParam, paramName)}"
+            theList.forEachIndexed { index, theParam ->
+                if (index == 0) {
+                    result += handleParameter(theParam, paramName)
+                } else {
+                    result += " or ${handleParameter(theParam, paramName)}"
+                }
+            }
+            result = "where ($result)"
+
+            return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
+                "#SNIPPETS", result
+            )
+    }
+
+    private fun handleParameter(theParam: IQueryParameterType, paramName: String): String {
+        return when (paramName) {
+            //handle special parameters
+            "_content" -> {
+                handleContentParam(theParam as StringParam, paramName)
+            }
+            "_filter" -> {
+                handleFilterParam(theParam as StringParam)
+            }
+            "_list" -> {
+                handleListParam(theParam as StringParam, paramName)
+            }
+            "_has" -> {
+                handleHasParam(theParam as HasParam, paramName)
+            }
+            //handle base parameters
+            else -> {
+                handleBaseParameter(theParam, paramName)
             }
         }
-        result = "where ($result)"
-
-        return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
-            "#SNIPPETS", result
-        )
     }
 
     private fun handleBaseParameter(theParam: IQueryParameterType, paramName: String): String {
@@ -68,7 +104,7 @@ class QueryGenerator {
                 handleDateParam(theParam as DateParam, paramName)
             }
             DateRangeParam::class.java -> {
-                "" //TODO: I dont think this will ever appear here
+                "" //Does not appear in any ResourceProvider
             }
             StringParam::class.java -> {
                 handleStringParam(theParam as StringParam, paramName)
@@ -77,10 +113,10 @@ class QueryGenerator {
                 handleTokenParam(theParam as TokenParam, paramName)
             }
             ReferenceParam::class.java -> {
-                ""
+                handleReferenceParam(theParam as ReferenceParam, paramName)
             }
             CompositeParam::class.java -> {
-                ""
+                handleCompositeParam(theParam as CompositeParam<IQueryParameterType, IQueryParameterType>, paramName)
             }
             QuantityParam::class.java -> {
                 handleQuantityParam(theParam as QuantityParam, paramName)
@@ -89,12 +125,62 @@ class QueryGenerator {
                 handleURIParam(theParam as UriParam, paramName)
             }
             SpecialParam::class.java -> {
-                ""
+                handleSpecialParam(theParam as SpecialParam, paramName)
             }
             else -> {
-                ""
+                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
             }
         }
+    }
+
+    /** TODO: Implement this logic
+     * This is a simple implementation of the Filter Parameter.
+     * For now, it allows to compose more complex Queries with "x (and | or) (+ not) x" on the search Parameters of a resource.
+     * The logic creates Parameters by dissecting the Query String and matching it to the search parameters.
+     * The normal Query logic is then applied.
+     *
+     * Operators are limited for each search Parameter. Unsupported Operators throw an exception.
+     * Additional Parameters are not implemented (https://www.hl7.org/fhir/search_filter.html#params).
+     * Concept Operators (ss, sb, in, ni) are not supported as this logic is not implemented by the server.
+     */
+
+    private fun handleFilterParam(theParam: StringParam): String {
+        throw NotImplementedOperationException(Msg.code(501) + theParam.toString() +
+                ". Please use the standard search syntax.")
+    }
+
+    private fun handleContentParam(theParam: StringParam, paramName: String): String {
+        return QuerySnippets.StringSnippets.contentParam(paramName, theParam.value)
+    }
+
+    private fun handleListParam(theParam: StringParam, paramName: String): String {
+        return QuerySnippets.StringSnippets.listSearch(paramName, theParam.value)
+    }
+
+    private fun handleHasParam(theParam: HasParam, paramName: String): String {
+        if (theParam.parameterName == null ||
+            theParam.parameterValue == null ||
+            theParam.referenceFieldName == null ||
+            theParam.targetResourceType == null) {
+            throw InvalidRequestException(Msg.code(1235) + "Incomplete _has Parameter. Please correct it. $theParam")
+        }
+        if (theParam.parameterName.contains("_has")) {
+            //TODO: Make _has chaining work (HAPI does not support it yet)
+            throw InvalidRequestException(Msg.code(1235) + "_has chaining is not supported yet. $theParam")
+        }
+
+        val pathMap = PathMapUtil.getPathMap()
+        val referencePath = mapPathToXPath(pathMap[theParam.targetResourceType]!![theParam.referenceFieldName]!!)
+        val parameterPath = mapPathToXPath(pathMap[theParam.targetResourceType]!![theParam.parameterName]!!)
+
+        return QuerySnippets.HasSnippets.hasQuery(
+            referencePath = referencePath,
+            parameterPath = parameterPath,
+            parameterValue = theParam.parameterValue,
+            targetResourceType = theParam.targetResourceType,
+            searchParameterName = paramName
+        )
+
     }
 
     private fun handleStringParam(theParam: StringParam, paramName: String): String {
@@ -155,7 +241,7 @@ class QueryGenerator {
                 return QuerySnippets.DateSnippets.LESSTHAN_OR_EQUALS(paramName, theParam.valueAsString)
             }
             ParamPrefixEnum.EQUAL, null /* e.g. ?[parameter]=2022-01-01 */ -> {
-                //TODO: Equal prefix creates two lists (possible error in HAPI?)
+                //TODO: Equal prefix creates two lists (possible error in HAPI?); Can be ignored as this just creates redundant conditions
                 return QuerySnippets.DateSnippets.EQUAL(paramName, theParam.valueAsString)
             }
             ParamPrefixEnum.NOT_EQUAL -> {
@@ -216,9 +302,9 @@ class QueryGenerator {
     }
 
     private fun handleQuantityParam(theParam: QuantityParam, paramName: String): String {
-        //TODO: Conversion of units in the future?
+        //TODO: Conversion of units in the future (e.g. kg -> mg)
         if (theParam.value == null) {
-            //TODO: Error
+            throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
         var query = ""
 
@@ -254,7 +340,7 @@ class QueryGenerator {
                 query += QuerySnippets.QuantitySnippets.ENDS_BEFORE(paramName, theParam)
             }
             else -> {
-                //TODO: Error code
+                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
             }
         }
         if (theParam.system != null && theParam.units != null) {
@@ -267,7 +353,6 @@ class QueryGenerator {
     }
 
     private fun handleURIParam(theParam: UriParam, paramName: String): String {
-        //TODO: :urn ?
         return if (theParam.qualifier != null) {
             when (theParam.qualifier) {
                 UriParamQualifierEnum.ABOVE -> {
@@ -281,4 +366,65 @@ class QueryGenerator {
             QuerySnippets.UriSnippets.searchForUriExact(paramName, theParam.value)
         }
     }
+
+    private fun handleReferenceParam(theParam: ReferenceParam, paramName: String): String {
+        //TODO: Resource Hierarchy (:above, :below) not supported by HAPI Server: https://www.hl7.org/fhir/references.html#circular
+        if (theParam.chain != null) {
+            //TODO: Chained Query on versioned references not supported yet
+            return QuerySnippets.ReferenceSnippets.chainedQuery(paramName, theParam.chain, theParam.value)
+        }
+
+        var versionId: String? = null
+
+        if (theParam.value.contains("_history")) {
+            versionId = theParam.value.substringAfter("_history/")
+        }
+
+        //Search just for ID, every Type
+        return if (theParam.idPart != null && theParam.resourceType == null) {
+            if (versionId != null) {
+                QuerySnippets.ReferenceSnippets.searchForVersionedId(paramName, theParam.idPart, versionId)
+            } else {
+                QuerySnippets.ReferenceSnippets.searchForId(paramName, theParam.idPart)
+            }
+
+        //Search for ID with specific Type
+        } else if (theParam.idPart != null && theParam.resourceType != null) {
+            if (versionId != null) {
+                QuerySnippets.ReferenceSnippets.searchForVersionedIdAndType(
+                    paramName, theParam.idPart, theParam.resourceType, versionId
+                )
+            } else {
+                QuerySnippets.ReferenceSnippets.searchForIdAndType(
+                    paramName, theParam.idPart, theParam.resourceType
+                )
+            }
+        } else {
+            throw InvalidRequestException(Msg.code(1235) + theParam.toString())
+        }
+    }
+
+    private fun handleCompositeParam(theParam: CompositeParam<IQueryParameterType, IQueryParameterType>, paramName: String): String {
+        return "( ${handleParameter(theParam.leftValue, paramName)} and ${handleParameter(theParam.rightValue, paramName)} )"
+    }
+
+    private fun handleSpecialParam(theParam: SpecialParam, paramName: String): String {
+        //Only special Param in R4 is "near" for Location
+        if (paramName == "near") {
+            val coords = theParam.value.split("|")
+            if (coords.size < 4) {
+                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
+            }
+            //latitude|longitude|distance|unit -> unit is not important
+            return if (coords[2].isNotEmpty()) {
+                QuerySnippets.SpecialQueries.locationNearWithDistance(paramName, coords[0], coords[1], coords[2])
+            } else {
+                QuerySnippets.SpecialQueries.locationNearWithoutDistance(paramName, coords[0], coords[1])
+            }
+        } else {
+            throw NotImplementedOperationException(Msg.code(501) + theParam.toString())
+        }
+    }
+
+
 }

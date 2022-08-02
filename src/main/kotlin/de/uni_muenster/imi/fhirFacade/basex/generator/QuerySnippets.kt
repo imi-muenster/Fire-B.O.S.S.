@@ -15,6 +15,14 @@ object QuerySnippets {
                 "for \$$searchParameterName in \$${searchParameterName}_set \n" +
                 "#SNIPPETS \n"
 
+    fun serverHistoryResourcePart(type: String) =
+        "{\n" +
+            "for \$x in db:open(\"$type\")\n" +
+            "#OPTIONALSEARCHPARAMETERS\n" +
+            "\n" +
+            "return element result {\$x}\n" +
+        "}\n"
+
     /* https://www.hl7.org/fhir/search.html#string */
     object StringSnippets {
         fun stringStart(searchParameterName: String, value: String) =
@@ -25,6 +33,12 @@ object QuerySnippets {
 
         fun stringExact(searchParameterName: String, value: String) =
             "(\$$searchParameterName/@value = \"$value\")"
+
+        fun contentParam(searchParameterName: String, value: String) =
+            "(contains(\$$searchParameterName, \"$value\"))"
+
+        fun listSearch(searchParameterName: String, value: String) =
+            "( local:searchInList(\$$searchParameterName/id/@value, \$x/*/name(), \"$value\") )"
     }
 
     /** https://www.hl7.org/fhir/search.html#number  **/
@@ -226,6 +240,84 @@ object QuerySnippets {
         fun searchForUriBelow(searchParameterName: String, uri: String) =
             "(" +
                 "( \$$searchParameterName[starts-with(@value, \"$uri\")] )" +
+            ")"
+    }
+
+    object ReferenceSnippets {
+
+        fun searchForId(searchParameterName: String, idValue: String) =
+            "(" +
+                "( \$$searchParameterName//reference[contains(@value, \"$idValue\")] )" +
+            ")"
+
+        fun searchForVersionedId(searchParameterName: String, idValue: String, versionId: String) =
+            "(" +
+                "( \$$searchParameterName//reference[contains(@value, \"$idValue/_history/$versionId\")] )" +
+            ")"
+
+        fun searchForIdAndType(searchParameterName: String, idValue: String, type: String) =
+            "(" +
+                "( \$$searchParameterName//reference[contains(@value, \"$type/$idValue\")] )" +
+            ")"
+
+        fun searchForVersionedIdAndType(searchParameterName: String, idValue: String, type: String, versionId: String) =
+            "(" +
+                "( \$$searchParameterName//reference[contains(@value, \"$type/$idValue/_history/$versionId\")] )" +
+            ")"
+        fun chainedQuery(searchParameterName: String, chainedParameterName: String, chainedValue: String) =
+            "(" +
+                "( local:performChainedQuery(\$$searchParameterName//@value, \"$chainedParameterName\", \"$chainedValue\") )" +
+            ")"
+    }
+
+    object SpecialQueries {
+
+        fun locationNearWithDistance(
+            searchParameterName: String,
+            latitude: String,
+            longitude: String,
+            distance: String
+        ) =
+            "(" +
+                "(local:euclideanDistance(" +
+                    "\$$searchParameterName//latitude/@value, " +
+                    "\$$searchParameterName//longitude/@value, " +
+                    "\"$latitude\", " +
+                    "\"$longitude\"" +
+                ") < xs:double($distance))" +
+            ")"
+
+        fun locationNearWithoutDistance(
+            searchParameterName: String,
+            latitude: String,
+            longitude: String
+        ) =
+            "(" +
+                "(local:euclideanDistance(" +
+                    "\$$searchParameterName//latitude/@value, " +
+                    "\$$searchParameterName//longitude/@value, " +
+                    "\"$latitude\", " +
+                    "\"$longitude\"" +
+                ") < xs:double(200))" +
+            ")"
+    }
+
+    object HasSnippets {
+        fun hasQuery(
+                referencePath: String,
+                parameterPath: String,
+                parameterValue: String,
+                targetResourceType: String,
+                searchParameterName: String
+        ) =
+            "(" +
+                "( local:performReverseChainedQuery(" +
+                    "\'$referencePath\', " +
+                    "\$$searchParameterName/id/@value, " +
+                    "\'$parameterPath\'," +
+                    "\'$parameterValue\'," +
+                    "\'$targetResourceType\'" +
+                ") )" +
             ")"
     }
 
