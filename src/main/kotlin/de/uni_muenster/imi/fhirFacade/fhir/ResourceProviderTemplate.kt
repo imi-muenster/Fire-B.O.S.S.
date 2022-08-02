@@ -7,23 +7,26 @@ import ca.uhn.fhir.jpa.util.xmlpatch.XmlPatchUtils
 import ca.uhn.fhir.rest.annotation.*
 import ca.uhn.fhir.rest.api.MethodOutcome
 import ca.uhn.fhir.rest.api.PatchTypeEnum
-import ca.uhn.fhir.rest.param.DateParam
-import ca.uhn.fhir.rest.param.DateRangeParam
+import ca.uhn.fhir.rest.param.*
 import ca.uhn.fhir.rest.server.IResourceProvider
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
 import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
+import de.uni_muenster.imi.fhirFacade.basex.generator.QueryGenerator
+import de.uni_muenster.imi.fhirFacade.fhir.FhirServer.Companion.baseX
+import de.uni_muenster.imi.fhirFacade.fhir.helper.ParameterConverter
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
 import de.uni_muenster.imi.fhirFacade.fhir.helper.getNewestVersionFromBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.OperationOutcome
 
 abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceType: T): IResourceProvider {
 
-    private val fhirType = resourceType::class.simpleName!!
+    private val fhirType = resourceType.fhirType()
     override fun getResourceType(): Class<out IBaseResource> {
         return resourceType::class.java
     }
@@ -32,11 +35,10 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         return baseX
     }
 
-    //TODO: Read FHIR Documentation on how these functions should behave
     //TODO: Conditionals?
     //TODO: Validation has to be made on Resource level
-    //TODO: Transactional not implemented in HAPI.
 
+    //TODO: Maybe Use Query Generator for Read
     @Read(version = true)
     fun getResourceById(@IdParam theId: IdType): IBaseResource? {
         return if(theId.hasVersionIdPart()) {
@@ -145,32 +147,49 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
     }
 
-    //TODO: Redo later with Query Generator
-    @History()
-    fun getResourceHistory(@IdParam theId: IdType, @At theAt: DateRangeParam): List<IBaseResource> {
-        theAt.completeInformation()
+
+    //TODO: Save request History for modified files and present them here
+    @History
+    fun getInstanceHistory(@IdParam theId: IdType,
+                           @At theAt: DateRangeParam?,
+                           @Since theSince: DateTimeType?
+    ): List<IBaseResource> {
+        val paramMap = ParameterConverter.getSearchParameterMapForInstanceHistory(theId, theAt, theSince)
+        val pathMap: HashMap<String, String> = HashMap<String, String>().apply {
+            put("_id", "${getResourceName()}.id")
+            put("_since", "${getResourceName()}.meta.lastUpdated")
+            put("_at", "${getResourceName()}.meta.lastUpdated")
+        }
+
+        val gen = QueryGenerator()
+        val search = gen.generateQuery(paramMap, pathMap, this.getResourceName())
+
         return decodeQueryResults(
-            baseX.executeXQuery(
-                BaseXQueries.getHistoryInRange(
-                    this.fhirType,
-                    theId.idPart,
-                    theAt.lowerBound.valueAsString,
-                    theAt.upperBound.valueAsString
-                )
-            )
+            baseX.executeXQuery(search)
         )
     }
 
     @History
-    fun getResourcesSince(@IdParam theId: IdType, @Since theSince: DateParam) {
-        //TODO: Implement
+    fun getTypeHistory(@At theAt: DateRangeParam?, @Since theSince: DateTimeType?): List<IBaseResource> {
+        val paramMap = ParameterConverter.getSearchParameterMapForTypeHistory(theAt, theSince)
+        val pathMap: HashMap<String, String> = HashMap<String, String>().apply {
+            put("_since", "${getResourceName()}.meta.lastUpdated")
+            put("_at", "${getResourceName()}.meta.lastUpdated")
+        }
+
+        val gen = QueryGenerator()
+        val search = gen.generateQuery(paramMap, pathMap, this.getResourceName())
+
+        return decodeQueryResults(
+            baseX.executeXQuery(search)
+        )
     }
 
     fun getResourceName(): String {
         return this.fhirType
     }
 
-    private fun getResourceForIdWithVersion(theId: IdType): IBaseResource? {
+    private fun getResourceForIdWithVersion(theId: IdType): IBaseResource {
         return decodeQueryResults(
             baseX.executeXQuery(
                 BaseXQueries.getByIdAndVersion(this.fhirType, theId.idPart, theId.versionIdPart)
