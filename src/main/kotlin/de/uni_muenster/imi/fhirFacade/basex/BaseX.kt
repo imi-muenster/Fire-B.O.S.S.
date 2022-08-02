@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 class BaseX(SETTINGS: Properties) {
     private lateinit var session: ClientSession
-    private val log = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     init {
         try {
@@ -22,7 +22,7 @@ class BaseX(SETTINGS: Properties) {
                 SETTINGS["basex.password", true]
             )
         } catch (e: Exception) {
-            log.error("Could not establish connection: ${e.message}")
+            logger.error("Could not establish connection: ${e.message}")
         }
     }
 
@@ -39,7 +39,7 @@ class BaseX(SETTINGS: Properties) {
             try {
                 session.execute("open $type")
             } catch (e: BaseXException) {
-                log.info("Database was not found. Creating it.")
+                logger.info("Database was not found. Creating it.")
                 session.execute("create db $type")
                 session.execute("open $type")
             }
@@ -49,7 +49,12 @@ class BaseX(SETTINGS: Properties) {
     }
 
     fun executeXQuery(xquery: String): String {
-        return session.query(xquery).execute()
+        try {
+            return session.query(xquery).execute()
+        } catch (e: Exception) {
+            logger.info("Could not execute Query: $e")
+        }
+        return ""
     }
 
     fun close() {
