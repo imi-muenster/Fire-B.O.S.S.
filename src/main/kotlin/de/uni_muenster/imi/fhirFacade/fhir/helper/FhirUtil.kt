@@ -1,6 +1,9 @@
 package de.uni_muenster.imi.fhirFacade.fhir.helper
 
 import ca.uhn.fhir.context.FhirContext
+import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
+import de.uni_muenster.imi.fhirFacade.fhir.FhirServer
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
@@ -13,7 +16,7 @@ import java.util.*
 private val fhirContext = FhirContext.forR4()
 private val xmlParser = fhirContext.newXmlParser()
 private val jsonParser = fhirContext.newJsonParser()
-
+private val logger = KotlinLogging.logger {  }
 
 fun encodeFromResource(resource: IBaseResource, parserType: ParserType = ParserType.XML): String? {
     return when (parserType) {
@@ -47,9 +50,17 @@ private fun decodeFromString(resourceString: String, parserType: ParserType): IB
 fun decodeQueryResults(resultString: String): List<IBaseResource> {
     val result = mutableListOf<IBaseResource>()
     splitSearchResults(resultString).forEach {
-        result.add(decodeFromString(it.trim())!!)
+        val decoded = decodeFromString(it.trim())
+        if (decoded != null) {
+            result.add(decoded)
+        }
     }
     return result
+}
+
+fun getDBNames(): List<String> {
+    val result = FhirServer.baseX.executeXQuery(BaseXQueries.getDBNames())
+    return result.split("\n")
 }
 
 fun getNewestVersionFromBundle(resources: List<IBaseResource>): IBaseResource? {
@@ -121,6 +132,30 @@ private fun findClasses(directory: File, packageName: String): List<Class<*>> {
         }
     }
     return classes
+}
+
+fun getResourceNames(): List<String> {
+    val fhirContext = FhirContext.forR4()
+
+    val baseResourceNames: MutableList<String> = mutableListOf()
+
+    val p = Properties()
+    try {
+        p.load(fhirContext.version.fhirVersionPropertiesFile)
+    } catch (e: java.io.IOException) {
+        logger.error("Failed to load version property file", e)
+    }
+
+
+    for (next in p.keys) {
+        val str = next as String
+
+        if (str.startsWith("resource.")) {
+            baseResourceNames.add(str.substring("resource.".length))
+        }
+    }
+
+    return baseResourceNames
 }
 
 
