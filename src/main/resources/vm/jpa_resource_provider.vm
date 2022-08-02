@@ -44,6 +44,10 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			@OptionalParam(name=ca.uhn.fhir.rest.api.Constants.PARAM_FILTER)
 			StringAndListParam theFtFilter,
 
+			@Description(shortDefinition = "Search for resources that are within a certain list")
+            @OptionalParam(name= ca.uhn.fhir.rest.api.Constants.PARAM_LIST)
+            StringAndListParam theFtList,
+
 			@Description(shortDefinition="Search the contents of the resource's data using a fulltext search")
 			@OptionalParam(name=ca.uhn.fhir.rest.api.Constants.PARAM_CONTENT)
 			StringAndListParam theFtContent, 
@@ -73,7 +77,7 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			HasAndListParam theHas, 
 
 #foreach ( $param in $searchParams ) #{if}(true) #{end} 
-
+            //Path: "${param.path}"
 			@Description(shortDefinition="${param.description}")
 #if (${param.type} == 'string' )
 			@OptionalParam(name="${param.name}")
@@ -139,12 +143,14 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			HashMap<String, String> pathMap = new HashMap();
 
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_FILTER, theFtFilter);
+			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_LIST, theFtList);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_CONTENT, theFtContent);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_TEXT, theFtText);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_TAG, theSearchForTag);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_SECURITY, theSearchForSecurity);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_PROFILE, theSearchForProfile);
 			paramMap.add(ca.uhn.fhir.rest.api.Constants.PARAM_SOURCE, theSearchForSource);
+			paramMap.add("_lastUpdated", theLastUpdated);
 			paramMap.add("_has", theHas);
 #foreach ( $param in $searchParams ) 
 			paramMap.add("${param.name}", the${param.nameCapitalized});
@@ -152,9 +158,22 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
 			pathMap.put("${param.name}", "${param.path}");
 #end
 #end
+            //Add constant Paths:
+            pathMap.put("_id", "${className}.id");
+            pathMap.put("_lastUpdated", "${className}.meta.lastUpdated");
+            pathMap.put("_tag", "${className}.meta.tag");
+            pathMap.put("_profile", "${className}.meta.profile");
+            pathMap.put("_security", "${className}.meta.security");
+            pathMap.put("_source", "${className}.meta.source");
+            pathMap.put("_content", "/@value");
+            pathMap.put("_filter", "");
+            pathMap.put("_list", "${className}");
+            pathMap.put("_has", "${className}");
+
+
 #if ( $version != 'dstu' )
 			paramMap.setRevIncludes(theRevIncludes);
-			paramMap.setLastUpdated(theLastUpdated);
+
 #end
 			paramMap.setIncludes(theIncludes);
 			paramMap.setSort(theSort);
