@@ -20,27 +20,38 @@ object BaseXQueries {
         .replace("#ID", id)
         .replace("#VERSION", version)
 
-    fun getHistoryInRange(type: String, id: String, startDateTime: String, endDateTime: String)
-        = readFile("getHistoryInRange.xq")
-        .replace("#TYPE", type)
-        .replace("#ID", id)
-        .replace("#START_DATETIME", startDateTime)
-        .replace("#END_DATETIME", endDateTime)
 
-    fun performSearch(type: String, constantConditions: String, optionalSearchparameters: String)
+    fun getDBNames() = "for \$x in db:list()\nreturn \$x"
+
+    fun performSearch(type: String, optionalSearchparameters: String)
         = getDateFunctions() +
+        getListQueryFunction() +
+        getChainedQueryFunction() +
+        getReverseChainedQueryFunction() +
         readFile("searchTemplate.xq")
             .replace("#TYPE", type)
-            .replace("#CONSTANT_CONDITIONS", constantConditions)
             .replace("#OPTIONAL_SEARCHPARAMETERS", optionalSearchparameters)
 
-    fun getDateFunctions() = readFile("dateFunctions.xq")
+    fun getServerHistory(resourceParts: String) =
+        getDateFunctions() +
+        getListQueryFunction() +
+        readFile("serverHistoryTemplate.xq")
+            .replace("#RESOURCEPARTS", resourceParts)
+
+
+    private fun getDateFunctions() = readFile("dateFunctions.xq")
+
+    private fun getChainedQueryFunction() = readFile("chainedQuery.xq")
+
+    private fun getListQueryFunction() = readFile("listQuery.xq")
+
+    private fun getReverseChainedQueryFunction() = readFile("reverseChainedQuery.xq")
+
 
     private fun readFile(filename: String): String {
-        val query = javaClass.classLoader
+        return javaClass.classLoader
             .getResourceAsStream("queries/$filename")!!
             .readBytes()
             .toString(Charsets.UTF_8)
-        return query
     }
 }
