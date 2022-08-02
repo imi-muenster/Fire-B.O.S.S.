@@ -53,6 +53,11 @@ declare function local:getUpperDateRange($date as xs:string?) as xs:string?
         	let $result := $date
         	return $result
         )
+    else if ( (string-length($date) > 23) )
+        then (
+            let $result := fn:substring($date, 1, 23)
+            return $result
+        )
     else ()
 };
 
@@ -111,6 +116,11 @@ declare function local:getLowerDateRange($date as xs:string?) as xs:string?
     	then (
         	let $result := $date
         	return $result
+        )
+    else if ( (string-length($date) > 23) )
+        then (
+            let $result := fn:substring($date, 1, 23)
+            return $result
         )
     else ()
 };
