@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Properties
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.tinder.parser.ResourceGeneratorUsingModel
+import java.io.FileOutputStream
 
 plugins {
     kotlin("jvm") version "1.6.20"
@@ -72,6 +73,7 @@ tasks.war {
     archiveFileName.set("fhirFacade.war")
     webAppDirectory.set(file("src/main/webapp"))
     webInf { from("./settings/").into("classes/settings")}
+    webInf { from("./build/generated-sources/pathMap.properties").into("classes/resources")}
 }
 
 tasks.withType<KotlinCompile> {
@@ -174,6 +176,7 @@ fun generateSources(version: String) {
     try {
         val template = "src/main/resources/vm/jpa_resource_provider.vm"
         gen.parse()
+        writePathMap(gen)
         gen.setFilenameSuffix("ResourceProvider")
         gen.setTemplate(template)
         gen.setTemplateFile(File(template))
@@ -181,6 +184,26 @@ fun generateSources(version: String) {
     } catch(e: Exception) {
         logger.error("Failed to generate sources", e)
     }
+}
+
+fun writePathMap(gen: ResourceGeneratorUsingModel) {
+    val map: MutableMap<String, MutableMap<String, String>> = HashMap()
+    for (res in gen.resources) {
+        val searchMap: MutableMap<String, String> = HashMap()
+        for (sp in res.searchParameters) {
+            searchMap[sp.name] = sp.path
+        }
+        map[res.name] = searchMap
+    }
+
+    val properties = Properties()
+
+    for (entry in map) {
+        for (sm in entry.value)
+            properties.put("${entry.key}.${sm.key}", sm.value)
+    }
+
+    properties.store(FileOutputStream("${targetDirectory}/pathMap.properties"), null)
 }
 
 tasks.build {
