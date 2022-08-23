@@ -46,6 +46,7 @@ dependencies {
     implementation("ca.uhn.hapi.fhir:hapi-fhir-server:$hapi_version")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-jpaserver-base:$hapi_version")
     implementation("ca.uhn.hapi.fhir:hapi-tinder-plugin:$hapi_version")
+    implementation("ca.uhn.hapi.fhir:hapi-fhir-server-openapi:$hapi_version")
 
     // BASEX DEPENDENCIES //
     implementation("org.basex:basex:9.2.4")
