@@ -31,7 +31,6 @@ buildscript {
 }
 
 val hapi_version: String by project
-val ktor_version: String by project
 
 dependencies {
     // KOTLIN DEPENDENCIES //
