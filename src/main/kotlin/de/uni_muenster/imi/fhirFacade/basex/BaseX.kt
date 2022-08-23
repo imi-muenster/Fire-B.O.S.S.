@@ -3,6 +3,7 @@ package de.uni_muenster.imi.fhirFacade.basex
 import de.uni_muenster.imi.fhirFacade.fhir.addVersion
 import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
 import de.uni_muenster.imi.fhirFacade.utils.Properties
+import mu.KotlinLogging
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory
 
 class BaseX(SETTINGS: Properties) {
     private lateinit var session: ClientSession
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = KotlinLogging.logger {  }
 
     init {
         try {
@@ -22,7 +23,7 @@ class BaseX(SETTINGS: Properties) {
                 SETTINGS["basex.password", true]
             )
         } catch (e: Exception) {
-            logger.error("Could not establish connection: ${e.message}")
+            logger.error(e) {"Could not establish connection to ${SETTINGS["basex.host"]}:${SETTINGS["basex.port"]}: ${e.message}"}
         }
     }
 
