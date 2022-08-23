@@ -26,8 +26,7 @@ class BaseX(SETTINGS: Properties) {
         }
     }
 
-    fun postResourceToBaseX(resource: IBaseResource) {
-        val type = resource.fhirType()
+    fun postResourceToBaseX(resource: IBaseResource, type: String = resource.fhirType()) {
         val id = resource.idElement.idPart
 
         if (!resource.idElement.hasVersionIdPart()) {
@@ -48,6 +47,10 @@ class BaseX(SETTINGS: Properties) {
         }
     }
 
+    fun postResourceToHistory(resource: IBaseResource) {
+        postResourceToBaseX(resource, "${resource.fhirType()}_history")
+    }
+
     fun executeXQuery(xquery: String): String {
         try {
             return session.query(xquery).execute()
@@ -55,6 +58,15 @@ class BaseX(SETTINGS: Properties) {
             logger.info("Could not execute Query: $e")
         }
         return ""
+    }
+
+    fun createDbIfNotExist(dbName: String) {
+        try {
+            session.execute("open $dbName")
+        } catch (e: BaseXException) {
+            logger.info("Database was not found. Creating it.")
+            session.execute("create db $dbName")
+        }
     }
 
     fun close() {
