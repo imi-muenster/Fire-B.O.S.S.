@@ -39,6 +39,9 @@ object QuerySnippets {
 
         fun listSearch(searchParameterName: String, value: String) =
             "( local:searchInList(\$$searchParameterName/id/@value, \$x/*/name(), \"$value\") )"
+
+        fun textSearch(searchParameterName: String, value: String) =
+            "( \$$searchParameterName contains text \"$value\" )"
     }
 
     /** https://www.hl7.org/fhir/search.html#number  **/
