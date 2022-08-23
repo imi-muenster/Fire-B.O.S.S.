@@ -1,5 +1,8 @@
 package de.uni_muenster.imi.fhirFacade.fhir.helper
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.tinder.model.BaseRootType
+import ca.uhn.fhir.tinder.parser.ResourceGeneratorUsingModel
 import com.apicatalog.jsonld.loader.FileLoader
 import java.io.InputStreamReader
 import java.util.*
@@ -24,6 +27,38 @@ object PathMapUtil {
             }
         }
         return loadedMap
+    }
+
+    fun getResources(): MutableList<BaseRootType>? {
+
+        val baseResourceNames: MutableList<String> = mutableListOf()
+        val fhirContext = FhirContext.forR4()
+
+        val p = Properties()
+        try {
+            p.load(fhirContext.version.fhirVersionPropertiesFile)
+        } catch (e: java.io.IOException) {
+        }
+
+
+        for (next in p.keys) {
+            val str = next as String
+
+            if (str.startsWith("resource.")) {
+                baseResourceNames.add(str.substring("resource.".length).toLowerCase())
+            }
+        }
+
+        if (fhirContext.version.version == ca.uhn.fhir.context.FhirVersionEnum.DSTU3) {
+            baseResourceNames.remove("conformance")
+        }
+
+
+        val gen = ResourceGeneratorUsingModel("r4", "")
+        gen.setBaseResourceNames(baseResourceNames)
+
+        gen.parse()
+        return gen.resources
     }
 
 }
