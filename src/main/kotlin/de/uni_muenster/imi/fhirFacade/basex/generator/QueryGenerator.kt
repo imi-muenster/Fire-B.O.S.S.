@@ -30,7 +30,7 @@ class QueryGenerator {
 
     fun generateQuery(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
         val searchParameterPart = handleSearchParameterMap(parameterMap.getSearchParameterMap(), pathMap)
-        //TODO: Process result specific Parameters
+        //TODO: Process search result parameters
         val testQuery = BaseXQueries.performSearch(fhirType, searchParameterPart)
 
         return testQuery
@@ -87,6 +87,9 @@ class QueryGenerator {
             }
             "_has" -> {
                 handleHasParam(theParam as HasParam, paramName)
+            }
+            "_text" -> {
+                handleTextParam(theParam as StringParam, paramName)
             }
             //handle base parameters
             else -> {
@@ -183,6 +186,10 @@ class QueryGenerator {
 
     }
 
+    private fun handleTextParam(theParam: StringParam, paramName: String): String {
+        return QuerySnippets.StringSnippets.textSearch(paramName, theParam.value)
+    }
+
     private fun handleStringParam(theParam: StringParam, paramName: String): String {
         return if (theParam.isContains) {
             QuerySnippets.StringSnippets.stringContains(paramName, theParam.value)
@@ -226,7 +233,7 @@ class QueryGenerator {
     }
 
     private fun handleDateParam(theParam: DateParam, paramName: String): String {
-        //TODO: Time Zones?
+        //TODO: Add logic for Time Zones
         when (theParam.prefix) {
             ParamPrefixEnum.GREATERTHAN -> {
                 return QuerySnippets.DateSnippets.GREATERTHAN(paramName, theParam.valueAsString)
@@ -241,7 +248,7 @@ class QueryGenerator {
                 return QuerySnippets.DateSnippets.LESSTHAN_OR_EQUALS(paramName, theParam.valueAsString)
             }
             ParamPrefixEnum.EQUAL, null /* e.g. ?[parameter]=2022-01-01 */ -> {
-                //TODO: Equal prefix creates two lists (possible error in HAPI?); Can be ignored as this just creates redundant conditions
+                //Equal prefix creates two lists (possible error in HAPI?); Can be ignored as this just creates redundant conditions
                 return QuerySnippets.DateSnippets.EQUAL(paramName, theParam.valueAsString)
             }
             ParamPrefixEnum.NOT_EQUAL -> {
@@ -369,6 +376,7 @@ class QueryGenerator {
 
     private fun handleReferenceParam(theParam: ReferenceParam, paramName: String): String {
         //TODO: Resource Hierarchy (:above, :below) not supported by HAPI Server: https://www.hl7.org/fhir/references.html#circular
+        //TODO: Improve canonical reference logic (http://abc.cde/fgh|1.234 should match on http://abc.cde/fgh)
         if (theParam.chain != null) {
             //TODO: Chained Query on versioned references not supported yet
             return QuerySnippets.ReferenceSnippets.chainedQuery(paramName, theParam.chain, theParam.value)
