@@ -44,7 +44,6 @@ object XPathMapper {
 
         if (partWhere.contains("resolve()")) {
             val resolveType = partWhere.substringAfter("resolve() is ").substringBefore(")")
-            //TODO: Evaluate: with or without /.. at the end. Should be without as the reference is the important bit
             return "${partBefore.split(".").joinToString("/")}/reference[contains(@value, \"$resolveType\")]"
         } else {
             val partAfter = partWhere.substringAfter(".", "")
