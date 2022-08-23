@@ -3,10 +3,7 @@ import ca.uhn.fhir.rest.annotation.Search
 import ca.uhn.fhir.rest.param.DateParam
 import ca.uhn.fhir.tinder.parser.ResourceGeneratorUsingModel
 import de.uni_muenster.imi.fhirFacade.fhir.*
-import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
-import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
-import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
-import de.uni_muenster.imi.fhirFacade.fhir.helper.getResourceNames
+import de.uni_muenster.imi.fhirFacade.fhir.helper.*
 import mu.KotlinLogging
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
@@ -27,9 +24,7 @@ private val parser = ctx.newXmlParser().setPrettyPrint(true)
 val logger = KotlinLogging.logger {  }
 
 fun main() {
-    val test = getResourceNames()
-
-    println("deb")
+    PathMapUtil.getResources()
 
 }
 
