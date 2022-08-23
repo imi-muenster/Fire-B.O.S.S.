@@ -169,6 +169,7 @@ public class ${className}ResourceProvider extends ResourceProviderTemplate<${cla
             pathMap.put("_filter", "");
             pathMap.put("_list", "${className}");
             pathMap.put("_has", "${className}");
+            pathMap.put("_text", "${className}.text./*");
 
 
 #if ( $version != 'dstu' )
