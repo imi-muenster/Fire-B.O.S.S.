@@ -35,8 +35,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         return baseX
     }
 
-    //TODO: Conditionals?
-    //TODO: Validation has to be made on Resource level
+
 
     //TODO: Maybe Use Query Generator for Read
     @Read(version = true)
@@ -44,18 +43,18 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         return if(theId.hasVersionIdPart()) {
             getResourceForIdWithVersion(theId)
         } else {
-            getNewestVersionFromBundle(
-                getResourcesForId(theId)
-            )
+            getResourceForId(theId)
         }
     }
 
-    //TODO: Return Resource on update?
+    //TODO: Return Resource on update
+    //TODO: Move history Resources to different db
+    //TODO: Implement Conditional Updates
     @Update
     fun update(@IdParam theId: IdType, @ResourceParam theResource: String): MethodOutcome {
-        val availableResources = getResourcesForId(theId)
+        val availableResource = getResourceById(theId)
 
-        if (availableResources.isNotEmpty()) {
+        if (availableResource != null) {
             val decodedResource = decodeFromString(theResource)
             if (decodedResource != null) {
                 val urlId = theId.idPart
@@ -66,10 +65,12 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                 }
 
                 val newVersionNumber =
-                    "${getNewestVersionFromBundle(availableResources)!!.idElement.versionIdPart.toInt() + 1}"
+                    "${availableResource.idElement.versionIdPart.toInt() + 1}"
                 decodedResource.setNewVersion(newVersionNumber)
 
                 baseX.postResourceToBaseX(decodedResource)
+                delete(IdType(availableResource.idElement.value))
+                baseX.postResourceToHistory(availableResource)
 
                 return MethodOutcome().apply {
                     id = decodedResource.idElement
@@ -81,7 +82,6 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                 }
             }
         } else {
-            //TODO: Should Update include create?
             return create(theResource)
         }
     }
@@ -104,12 +104,13 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
     }
 
+    //TODO: Delete should not remove file; Keep functionality to make files movable internally
     @Delete
     fun delete(@IdParam theId: IdType) {
         if (!theId.hasVersionIdPart()) {
-            val availableResources = getResourcesForId(theId)
+            val availableResources = getResourceById(theId)
 
-            if (availableResources.isNotEmpty()) {
+            if (availableResources != null) {
                 baseX.executeXQuery(
                     BaseXQueries.deleteById(this.fhirType, theId.idPart)
                 )
@@ -162,10 +163,11 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
 
         val gen = QueryGenerator()
-        val search = gen.generateQuery(paramMap, pathMap, this.getResourceName())
+        val search = gen.getHistoryForType(paramMap, pathMap, this.getResourceName()) +
+                        gen.getHistoryForType(paramMap, pathMap, "${this.getResourceName()}_history")
 
         return decodeQueryResults(
-            baseX.executeXQuery(search)
+            baseX.executeXQuery(BaseXQueries.getServerHistory(search))
         )
     }
 
@@ -178,10 +180,11 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
 
         val gen = QueryGenerator()
-        val search = gen.generateQuery(paramMap, pathMap, this.getResourceName())
+        val search = gen.getHistoryForType(paramMap, pathMap, this.getResourceName()) +
+                        gen.getHistoryForType(paramMap, pathMap, "${this.getResourceName()}_history")
 
         return decodeQueryResults(
-            baseX.executeXQuery(search)
+            baseX.executeXQuery(BaseXQueries.getServerHistory(search))
         )
     }
 
@@ -189,19 +192,31 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         return this.fhirType
     }
 
-    private fun getResourceForIdWithVersion(theId: IdType): IBaseResource {
-        return decodeQueryResults(
+    private fun getResourceForIdWithVersion(theId: IdType): IBaseResource? {
+        val result = decodeQueryResults(
             baseX.executeXQuery(
                 BaseXQueries.getByIdAndVersion(this.fhirType, theId.idPart, theId.versionIdPart)
             )
-        )[0]
+        )
+        return if (result.isNotEmpty()) {
+            //List should always contain only one element. Just to be safe
+            getNewestVersionFromBundle(result)
+        } else {
+            null
+        }
     }
 
-    private fun getResourcesForId(theId: IdType): List<IBaseResource> {
-        return decodeQueryResults(
+    private fun getResourceForId(theId: IdType): IBaseResource? {
+        val result = decodeQueryResults(
             baseX.executeXQuery(
                 BaseXQueries.getById(this.fhirType, theId.idPart)
             )
         )
+        return if (result.isNotEmpty()) {
+            //List should always contain only one element. Just to be safe
+            getNewestVersionFromBundle(result)
+        } else {
+            null
+        }
     }
 }
