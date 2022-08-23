@@ -2,6 +2,7 @@ package de.uni_muenster.imi.fhirFacade.fhir
 
 import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.rest.openapi.OpenApiInterceptor
 import ca.uhn.fhir.rest.server.RestfulServer
 import de.uni_muenster.imi.fhirFacade.fhir.helper.getAllResourceProviders
 import de.uni_muenster.imi.fhirFacade.utils.Properties
@@ -37,6 +38,8 @@ class FhirServer: RestfulServer() {
         for (resourceProvider in getAllResourceProviders()!!) {
             registerProvider(resourceProvider!!.getConstructor().newInstance())
         }
+
+        registerInterceptor(OpenApiInterceptor())
 
         log.info("FHIR Server started")
     }
