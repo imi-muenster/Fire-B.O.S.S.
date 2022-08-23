@@ -1,7 +1,9 @@
 package de.uni_muenster.imi.fhirFacade.utils
 
+import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
+import de.uni_muenster.imi.fhirFacade.fhir.helper.getResourceNames
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
 import java.io.*
@@ -11,7 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 fun main() {
-    fillServer()
+    createAllDatabases()
 }
 
 fun fillServer() {
@@ -35,5 +37,12 @@ fun addToServer(resource: IBaseResource) {
         .build()
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     println(response.body())
+}
 
+fun createAllDatabases() {
+    val basex = BaseX(Properties(path = "settings/default.properties"))
+    getResourceNames().forEach {
+        basex.createDbIfNotExist(it)
+        basex.createDbIfNotExist("${it}_history")
+    }
 }
