@@ -9,6 +9,7 @@ import ca.uhn.fhir.rest.api.MethodOutcome
 import ca.uhn.fhir.rest.api.PatchTypeEnum
 import ca.uhn.fhir.rest.param.*
 import ca.uhn.fhir.rest.server.IResourceProvider
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
 import de.uni_muenster.imi.fhirFacade.basex.BaseX
@@ -68,9 +69,8 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                     "${availableResource.idElement.versionIdPart.toInt() + 1}"
                 decodedResource.setNewVersion(newVersionNumber)
 
-                baseX.postResourceToBaseX(decodedResource)
                 delete(IdType(availableResource.idElement.value))
-                baseX.postResourceToHistory(availableResource)
+                baseX.postResourceToBaseX(decodedResource)
 
                 return MethodOutcome().apply {
                     id = decodedResource.idElement
@@ -104,23 +104,21 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
     }
 
-    //TODO: Delete should not remove file; Keep functionality to make files movable internally
     @Delete
     fun delete(@IdParam theId: IdType) {
         if (!theId.hasVersionIdPart()) {
-            val availableResources = getResourceById(theId)
+            val availableResource = getResourceById(theId)
 
-            if (availableResources != null) {
+            if (availableResource != null) {
+                baseX.postResourceToHistory(availableResource)
                 baseX.executeXQuery(
                     BaseXQueries.deleteById(this.fhirType, theId.idPart)
                 )
             } else {
-                throw ResourceNotFoundException(Msg.code(634) + "Unknown version")
+                throw ResourceNotFoundException(Msg.code(634) + "No Resource for ID available.")
             }
         } else {
-            baseX.executeXQuery(
-                BaseXQueries.deleteByIdAndVersion(this.fhirType, theId.idPart, theId.versionIdPart)
-            )
+            throw InvalidRequestException("Please do not use Version ID for delete Operation")
         }
     }
 
