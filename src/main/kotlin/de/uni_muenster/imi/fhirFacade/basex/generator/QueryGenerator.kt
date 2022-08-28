@@ -6,14 +6,12 @@ import ca.uhn.fhir.model.api.IQueryParameterType
 import ca.uhn.fhir.rest.param.*
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException
 import ca.uhn.fhir.rest.server.exceptions.NotImplementedOperationException
-import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
 import de.uni_muenster.imi.fhirFacade.basex.generator.XPathMapper.mapPathToXPath
 import de.uni_muenster.imi.fhirFacade.fhir.getSearchParameterMap
 import de.uni_muenster.imi.fhirFacade.fhir.helper.PathMapUtil
 import de.uni_muenster.imi.fhirFacade.fhir.helper.SignificanceHelper
 import org.apache.commons.lang.StringUtils
-import org.hl7.fhir.instance.model.api.IBaseResource
 import kotlin.collections.HashMap
 
 class QueryGenerator {
@@ -31,9 +29,9 @@ class QueryGenerator {
     fun generateQuery(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
         val searchParameterPart = handleSearchParameterMap(parameterMap.getSearchParameterMap(), pathMap)
         //TODO: Process search result parameters
-        val testQuery = BaseXQueries.performSearch(fhirType, searchParameterPart)
+        val query = BaseXQueries.performSearch(fhirType, searchParameterPart)
 
-        return testQuery
+        return query
     }
 
     fun getHistoryForType(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
