@@ -48,14 +48,9 @@ private fun decodeFromString(resourceString: String, parserType: ParserType): IB
 }
 
 fun decodeQueryResults(resultString: String): List<IBaseResource> {
-    val result = mutableListOf<IBaseResource>()
-    splitSearchResults(resultString).forEach {
-        val decoded = decodeFromString(it.trim())
-        if (decoded != null) {
-            result.add(decoded)
-        }
+    return splitSearchResults(resultString).mapNotNull {
+        decodeFromString(it.trim())
     }
-    return result
 }
 
 fun getDBNames(): List<String> {
