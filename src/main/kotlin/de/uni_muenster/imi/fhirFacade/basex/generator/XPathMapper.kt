@@ -31,7 +31,7 @@ object XPathMapper {
     private fun handlePathWithOr(path: String): MutableList<String> {
         val paths = mutableListOf<String>()
         path.split("|").forEach {
-            val mappedPath = mapPathToXPath(removeBracketsAroundPath(it))
+            val mappedPath = mapPathToXPath(it)
             paths.add(mappedPath)
 
         }
