@@ -38,7 +38,6 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
 
 
 
-    //TODO: Maybe Use Query Generator for Read
     @Read(version = true)
     fun getResourceById(@IdParam theId: IdType): IBaseResource? {
         return if(theId.hasVersionIdPart()) {
@@ -49,7 +48,6 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
     }
 
     //TODO: Return Resource on update
-    //TODO: Move history Resources to different db
     //TODO: Implement Conditional Updates
     @Update
     fun update(@IdParam theId: IdType, @ResourceParam theResource: String): MethodOutcome {
@@ -69,7 +67,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                     "${availableResource.idElement.versionIdPart.toInt() + 1}"
                 decodedResource.setNewVersion(newVersionNumber)
 
-                delete(IdType(availableResource.idElement.value))
+                delete(IdType(availableResource.idElement.idPart))
                 baseX.postResourceToBaseX(decodedResource)
 
                 return MethodOutcome().apply {
