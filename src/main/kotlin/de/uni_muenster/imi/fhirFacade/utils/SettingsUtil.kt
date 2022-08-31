@@ -31,7 +31,7 @@ class Properties @JvmOverloads constructor(context: ServletContext? = null, path
     }
 
     fun getBool(key: String): Boolean {
-        return get(key).toBoolean() ?: false
+        return get(key).toBoolean()
     }
 
     fun getList(key: String): List<String> {
