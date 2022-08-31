@@ -4,6 +4,7 @@ import de.uni_muenster.imi.fhirFacade.basex.BaseX
 import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
 import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
 import de.uni_muenster.imi.fhirFacade.fhir.helper.getResourceNames
+import mu.KotlinLogging
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
 import java.io.*
@@ -12,8 +13,10 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+private val log = KotlinLogging.logger {}
+
 fun main() {
-    createAllDatabases()
+    fillServer()
 }
 
 fun fillServer() {
@@ -21,6 +24,7 @@ fun fillServer() {
     for (file in files.listFiles()!!) {
         val resource = decodeFromString(file.readText())
         if (resource != null) {
+            log.info("Adding resource: ${resource.fhirType()} - ID: ${resource.idElement}")
             addToServer(resource)
         }
     }
