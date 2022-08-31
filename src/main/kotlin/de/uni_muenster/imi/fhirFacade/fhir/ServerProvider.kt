@@ -52,14 +52,15 @@ class ServerProvider {
         val paramMap = ParameterConverter.getSearchParameterMapForTypeHistory(null, null)
         val gen = QueryGenerator()
 
-        var resourceParts = ""
-        for (resType in getDBNames()) {
-            val pathMap: HashMap<String, String> = HashMap<String, String>().apply {
-                put("_at", "${resType}.meta.lastUpdated")
-                put("_since", "${resType}.meta.lastUpdated")
-            }
+        val resourceParts = buildString {
+            for (resType in getDBNames()) {
+                val pathMap: HashMap<String, String> = HashMap<String, String>().apply {
+                    put("_at", "${resType}.meta.lastUpdated")
+                    put("_since", "${resType}.meta.lastUpdated")
+                }
 
-            resourceParts += gen.getHistoryForType(paramMap, pathMap, resType)
+                append(gen.getHistoryForType(paramMap, pathMap, resType))
+            }
         }
 
         return decodeQueryResults(
@@ -122,11 +123,11 @@ class ServerProvider {
         }
     }
     private fun createParamString(params: Map<String, Array<String>>): String {
-        var paramString = ""
-        for (param in params) {
-            paramString += "${param.key}=${param.value.joinToString(",")}&"
-        }
-        return paramString.substringBeforeLast("&")
+        return buildString {
+            for ((paramKey, paramValue) in params) {
+                append("${paramKey}=${paramValue.joinToString(",")}&")
+            }
+        }.substringBeforeLast("&")
     }
 
     private fun filterResourceTypes(typeParam: StringAndListParam): List<String> {

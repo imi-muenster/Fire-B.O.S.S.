@@ -45,7 +45,7 @@ object PathMapUtil {
             val str = next as String
 
             if (str.startsWith("resource.")) {
-                baseResourceNames.add(str.substring("resource.".length).toLowerCase())
+                baseResourceNames.add(str.substring("resource.".length).lowercase())
             }
         }
 

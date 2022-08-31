@@ -44,27 +44,20 @@ class QueryGenerator {
     private fun handleSearchParameterMap(theMap: HashMap<String, List<List<IQueryParameterType>>>,
                                          pathMap: HashMap<String, String>
     ): String {
-        var result = ""
-        for (entry in theMap) {
-            for (list in entry.value) {
-                val path = mapPathToXPath(pathMap[entry.key]!!)
-                result += handleListEntry(entry.key, path, list)
+        return buildString {
+            for ((searchParam, orList) in theMap) {
+                for(andList in orList) {
+                    val path = mapPathToXPath(pathMap[searchParam]!!)
+                    append(handleListEntry(searchParam, path, andList))
+                }
             }
         }
-        return result
     }
 
     private fun handleListEntry(paramName: String, paramPath: String, theList: List<IQueryParameterType>): String {
-            var result = ""
-
-            theList.forEachIndexed { index, theParam ->
-                if (index == 0) {
-                    result += handleParameter(theParam, paramName)
-                } else {
-                    result += " or ${handleParameter(theParam, paramName)}"
-                }
+            val result = theList.joinToString(" or ", "where(", ")") {
+                handleParameter(it, paramName)
             }
-            result = "where ($result)"
 
             return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
                 "#SNIPPETS", result
@@ -311,48 +304,55 @@ class QueryGenerator {
         if (theParam.value == null) {
             throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
-        var query = ""
 
-        when(theParam.prefix) {
-            ParamPrefixEnum.EQUAL, null -> {
-                val range = SignificanceHelper.getSignificantRange(theParam)
-                query += QuerySnippets.QuantitySnippets.EQUAL(paramName, range)
+        val query = buildString {
+            when (theParam.prefix) {
+                ParamPrefixEnum.EQUAL, null -> {
+                    val range = SignificanceHelper.getSignificantRange(theParam)
+                    append(QuerySnippets.QuantitySnippets.EQUAL(paramName, range))
+                }
+                ParamPrefixEnum.NOT_EQUAL -> {
+                    val range = SignificanceHelper.getSignificantRange(theParam)
+                    append(QuerySnippets.QuantitySnippets.NOT_EQUAL(paramName, range))
+                }
+                ParamPrefixEnum.GREATERTHAN -> {
+                    append(QuerySnippets.QuantitySnippets.GREATERTHAN(paramName, theParam))
+                }
+                ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
+                    append(QuerySnippets.QuantitySnippets.GREATERTHAN_OR_EQUALS(paramName, theParam))
+                }
+                ParamPrefixEnum.LESSTHAN -> {
+                    append(QuerySnippets.QuantitySnippets.LESSTHAN(paramName, theParam))
+                }
+                ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
+                    append(QuerySnippets.QuantitySnippets.LESSTHAN_OR_EQUALS(paramName, theParam))
+                }
+                ParamPrefixEnum.APPROXIMATE -> {
+                    val range = SignificanceHelper.getSignificantRange(theParam)
+                    append(QuerySnippets.QuantitySnippets.APPROXIMATE(paramName, range))
+                }
+                ParamPrefixEnum.STARTS_AFTER -> {
+                    append(QuerySnippets.QuantitySnippets.STARTS_AFTER(paramName, theParam))
+                }
+                ParamPrefixEnum.ENDS_BEFORE -> {
+                    append(QuerySnippets.QuantitySnippets.ENDS_BEFORE(paramName, theParam))
+                }
+                else -> {
+                    throw InvalidRequestException(Msg.code(1235) + theParam.toString())
+                }
             }
-            ParamPrefixEnum.NOT_EQUAL -> {
-                val range = SignificanceHelper.getSignificantRange(theParam)
-                query += QuerySnippets.QuantitySnippets.NOT_EQUAL(paramName, range)
+            if (theParam.system != null && theParam.units != null) {
+                append(" and ${
+                    QuerySnippets.QuantitySnippets.searchForCodeAndSystem(
+                        paramName,
+                        theParam.units,
+                        theParam.system
+                    )
+                }")
             }
-            ParamPrefixEnum.GREATERTHAN -> {
-                query += QuerySnippets.QuantitySnippets.GREATERTHAN(paramName, theParam)
+            if (theParam.units != null && theParam.system == null) {
+                append(" and ${QuerySnippets.QuantitySnippets.searchForCodeWithoutSystem(paramName, theParam.units)}")
             }
-            ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
-                query += QuerySnippets.QuantitySnippets.GREATERTHAN_OR_EQUALS(paramName, theParam)
-            }
-            ParamPrefixEnum.LESSTHAN -> {
-                query += QuerySnippets.QuantitySnippets.LESSTHAN(paramName, theParam)
-            }
-            ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
-                query += QuerySnippets.QuantitySnippets.LESSTHAN_OR_EQUALS(paramName, theParam)
-            }
-            ParamPrefixEnum.APPROXIMATE -> {
-                val range = SignificanceHelper.getSignificantRange(theParam)
-                query += QuerySnippets.QuantitySnippets.APPROXIMATE(paramName, range)
-            }
-            ParamPrefixEnum.STARTS_AFTER -> {
-                query += QuerySnippets.QuantitySnippets.STARTS_AFTER(paramName, theParam)
-            }
-            ParamPrefixEnum.ENDS_BEFORE -> {
-                query += QuerySnippets.QuantitySnippets.ENDS_BEFORE(paramName, theParam)
-            }
-            else -> {
-                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
-            }
-        }
-        if (theParam.system != null && theParam.units != null) {
-            query += " and ${QuerySnippets.QuantitySnippets.searchForCodeAndSystem(paramName, theParam.units, theParam.system)}"
-        }
-        if (theParam.units != null && theParam.system == null) {
-            query += " and ${QuerySnippets.QuantitySnippets.searchForCodeWithoutSystem(paramName, theParam.units)}"
         }
         return "($query)"
     }
