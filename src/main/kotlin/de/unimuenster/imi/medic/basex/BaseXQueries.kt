@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.basex
+package de.unimuenster.imi.medic.basex
 
 object BaseXQueries {
 

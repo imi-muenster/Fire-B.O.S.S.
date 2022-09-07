@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.utils
+package de.unimuenster.imi.medic.utils
 
 import java.text.SimpleDateFormat
 import java.util.*

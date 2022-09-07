@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.basex.generator
+package de.unimuenster.imi.medic.basex.generator
 
 import ca.uhn.fhir.rest.param.NumberParam
 import ca.uhn.fhir.rest.param.QuantityParam

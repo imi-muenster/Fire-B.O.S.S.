@@ -1,11 +1,11 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.unimuenster.imi.medic.fhir
 
-import de.uni_muenster.imi.fhirFacade.basex.BaseX
+import de.unimuenster.imi.medic.basex.BaseX
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.openapi.OpenApiInterceptor
 import ca.uhn.fhir.rest.server.RestfulServer
-import de.uni_muenster.imi.fhirFacade.fhir.helper.getAllResourceProviders
-import de.uni_muenster.imi.fhirFacade.utils.Properties
+import de.unimuenster.imi.medic.fhir.helper.getAllResourceProviders
+import de.unimuenster.imi.medic.utils.Properties
 import mu.KotlinLogging
 import javax.servlet.ServletException
 import javax.servlet.annotation.WebServlet

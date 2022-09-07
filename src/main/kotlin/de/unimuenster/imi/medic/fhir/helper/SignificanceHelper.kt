@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.fhir.helper
+package de.unimuenster.imi.medic.fhir.helper
 
 import ca.uhn.fhir.rest.param.NumberParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum

@@ -1,14 +1,14 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.unimuenster.imi.medic.fhir
 
 import ca.uhn.fhir.model.api.annotation.Description
 import ca.uhn.fhir.rest.annotation.*
 import ca.uhn.fhir.rest.api.Constants
 import ca.uhn.fhir.rest.api.server.RequestDetails
 import ca.uhn.fhir.rest.param.StringAndListParam
-import de.uni_muenster.imi.fhirFacade.basex.BaseX
-import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
-import de.uni_muenster.imi.fhirFacade.basex.generator.QueryGenerator
-import de.uni_muenster.imi.fhirFacade.fhir.helper.*
+import de.unimuenster.imi.medic.basex.BaseX
+import de.unimuenster.imi.medic.basex.BaseXQueries
+import de.unimuenster.imi.medic.basex.generator.QueryGenerator
+import de.unimuenster.imi.medic.fhir.helper.*
 import mu.KotlinLogging
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle

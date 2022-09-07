@@ -22,10 +22,10 @@ import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.api.SearchContainedModeEnum;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import de.uni_muenster.imi.fhirFacade.fhir.ResourceProviderTemplate;
-import de.uni_muenster.imi.fhirFacade.basex.generator.QueryGenerator;
-import de.uni_muenster.imi.fhirFacade.basex.BaseX;
-import de.uni_muenster.imi.fhirFacade.fhir.helper.FhirUtilKt;
+import de.unimuenster.imi.medic.fhir.ResourceProviderTemplate;
+import de.unimuenster.imi.medic.basex.generator.QueryGenerator;
+import de.unimuenster.imi.medic.basex.BaseX;
+import de.unimuenster.imi.medic.fhir.helper.FhirUtilKt;
 
 public class ${className}ResourceProvider extends ResourceProviderTemplate<${className}> {
 

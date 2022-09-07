@@ -9,8 +9,8 @@ plugins {
     id("war")
 }
 
-group = "de.uni_muenster.imi.fhirFacade"
-version = "0.1"
+group = "de.unimuenster.imi.medic"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -52,10 +52,8 @@ dependencies {
 
     // SERVLET DEPENDENCIES //
     implementation("javax.servlet:javax.servlet-api:3.0.1")
-    implementation("org.eclipse.jetty:jetty-server:11.0.9")
-    implementation("org.eclipse.jetty:jetty-servlet:11.0.9")
-    implementation("org.eclipse.jetty:jetty-webapp:11.0.9")
 
+    // LOGGING DEPENDENCIES //
     implementation("io.github.microutils:kotlin-logging:2.1.21")
     implementation("org.slf4j:slf4j-api:2.0.0-alpha7")
     implementation("ch.qos.logback:logback-classic:1.3.0-alpha14") {
@@ -70,7 +68,7 @@ dependencies {
 }
 
 tasks.war {
-    archiveFileName.set("fhirFacade.war")
+    archiveFileName.set("fhirBoss.war")
     webAppDirectory.set(file("src/main/webapp"))
     webInf { from("./settings/").into("classes/settings")}
     webInf { from("./build/generated-sources/pathMap.properties").into("classes/resources")}
@@ -117,7 +115,7 @@ sourceSets {
 
 val targetDirectory = "${buildDir}/generated-sources"
 val baseDir = "${projectDir}"
-val packageBase = "de.uni_muenster.imi.fhirFacade.generated"
+val packageBase = "de.unimuenster.imi.medic.generated"
 
 fun generateSources(version: String) {
     val fhirContext: FhirContext
@@ -174,7 +172,7 @@ fun generateSources(version: String) {
     gen.setBaseResourceNames(baseResourceNames)
 
     try {
-        val template = "src/main/resources/vm/jpa_resource_provider.vm"
+        val template = "src/main/resources/vm/resource_provider_searchTemplate.vm"
         gen.parse()
         writePathMap(gen)
         gen.setFilenameSuffix("ResourceProvider")

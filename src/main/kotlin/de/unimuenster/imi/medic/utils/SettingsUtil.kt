@@ -1,10 +1,7 @@
-package de.uni_muenster.imi.fhirFacade.utils
+package de.unimuenster.imi.medic.utils
 
-import com.apicatalog.jsonld.loader.FileLoader
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStreamReader
-import java.net.URI
 import javax.servlet.ServletContext
 
 class Properties @JvmOverloads constructor(context: ServletContext? = null, path: String) {

@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.fhir.helper
+package de.unimuenster.imi.medic.fhir.helper
 
 import java.net.http.HttpClient
 import java.net.http.HttpRequest

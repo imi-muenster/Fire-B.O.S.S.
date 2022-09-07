@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.unimuenster.imi.medic.fhir
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.i18n.Msg
@@ -12,14 +12,14 @@ import ca.uhn.fhir.rest.server.IResourceProvider
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException
-import de.uni_muenster.imi.fhirFacade.basex.BaseX
-import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
-import de.uni_muenster.imi.fhirFacade.basex.generator.QueryGenerator
-import de.uni_muenster.imi.fhirFacade.fhir.FhirServer.Companion.baseX
-import de.uni_muenster.imi.fhirFacade.fhir.helper.ParameterConverter
-import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
-import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeQueryResults
-import de.uni_muenster.imi.fhirFacade.fhir.helper.getNewestVersionFromBundle
+import de.unimuenster.imi.medic.basex.BaseX
+import de.unimuenster.imi.medic.basex.BaseXQueries
+import de.unimuenster.imi.medic.basex.generator.QueryGenerator
+import de.unimuenster.imi.medic.fhir.FhirServer.Companion.baseX
+import de.unimuenster.imi.medic.fhir.helper.ParameterConverter
+import de.unimuenster.imi.medic.fhir.helper.decodeFromString
+import de.unimuenster.imi.medic.fhir.helper.decodeQueryResults
+import de.unimuenster.imi.medic.fhir.helper.getNewestVersionFromBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.IdType

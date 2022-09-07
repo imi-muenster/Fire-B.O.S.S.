@@ -1,9 +1,9 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.unimuenster.imi.medic.fhir
 
 import ca.uhn.fhir.interceptor.api.Hook
 import ca.uhn.fhir.interceptor.api.Interceptor
 import ca.uhn.fhir.interceptor.api.Pointcut
-import de.uni_muenster.imi.fhirFacade.fhir.helper.PathMapUtil
+import de.unimuenster.imi.medic.fhir.helper.PathMapUtil
 import org.hl7.fhir.instance.model.api.IBaseConformance
 import org.hl7.fhir.r4.model.CapabilityStatement
 import org.hl7.fhir.r4.model.CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent

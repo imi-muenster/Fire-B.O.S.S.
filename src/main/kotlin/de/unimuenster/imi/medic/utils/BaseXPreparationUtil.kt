@@ -1,9 +1,9 @@
-package de.uni_muenster.imi.fhirFacade.utils
+package de.unimuenster.imi.medic.utils
 
-import de.uni_muenster.imi.fhirFacade.basex.BaseX
-import de.uni_muenster.imi.fhirFacade.fhir.helper.decodeFromString
-import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
-import de.uni_muenster.imi.fhirFacade.fhir.helper.getResourceNames
+import de.unimuenster.imi.medic.basex.BaseX
+import de.unimuenster.imi.medic.fhir.helper.decodeFromString
+import de.unimuenster.imi.medic.fhir.helper.encodeFromResource
+import de.unimuenster.imi.medic.fhir.helper.getResourceNames
 import mu.KotlinLogging
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType

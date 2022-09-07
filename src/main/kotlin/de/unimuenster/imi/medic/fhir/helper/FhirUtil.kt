@@ -1,8 +1,8 @@
-package de.uni_muenster.imi.fhirFacade.fhir.helper
+package de.unimuenster.imi.medic.fhir.helper
 
 import ca.uhn.fhir.context.FhirContext
-import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
-import de.uni_muenster.imi.fhirFacade.fhir.FhirServer
+import de.unimuenster.imi.medic.basex.BaseXQueries
+import de.unimuenster.imi.medic.fhir.FhirServer
 import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -75,7 +75,7 @@ fun stripNamespaceFromXML(resource: String): String {
 }
 
 fun getAllResourceProviders(): Array<Class<*>?>? {
-    return getClasses("de.uni_muenster.imi.fhirFacade.generated.r4")
+    return getClasses("de.unimuenster.imi.medic.generated.r4")
 }
 
 /**

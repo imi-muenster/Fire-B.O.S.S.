@@ -1,13 +1,12 @@
-package de.uni_muenster.imi.fhirFacade.basex
+package de.unimuenster.imi.medic.basex
 
-import de.uni_muenster.imi.fhirFacade.fhir.addVersion
-import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
-import de.uni_muenster.imi.fhirFacade.utils.Properties
+import de.unimuenster.imi.medic.fhir.addVersion
+import de.unimuenster.imi.medic.fhir.helper.encodeFromResource
+import de.unimuenster.imi.medic.utils.Properties
 import mu.KotlinLogging
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
 import org.hl7.fhir.instance.model.api.IBaseResource
-import org.slf4j.LoggerFactory
 
 
 class BaseX(SETTINGS: Properties) {

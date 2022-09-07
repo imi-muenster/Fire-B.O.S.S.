@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.fhir.helper
+package de.unimuenster.imi.medic.fhir.helper
 
 import ca.uhn.fhir.jpa.searchparam.SearchParameterMap
 import ca.uhn.fhir.rest.param.*

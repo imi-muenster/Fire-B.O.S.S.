@@ -1,2 +1,2 @@
-rootProject.name = "FhirFacade"
+rootProject.name = "FhirBOSS"
 

@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.fhirFacade.basex.generator
+package de.unimuenster.imi.medic.basex.generator
 
 import ca.uhn.fhir.i18n.Msg
 import ca.uhn.fhir.jpa.searchparam.SearchParameterMap
@@ -6,11 +6,11 @@ import ca.uhn.fhir.model.api.IQueryParameterType
 import ca.uhn.fhir.rest.param.*
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException
 import ca.uhn.fhir.rest.server.exceptions.NotImplementedOperationException
-import de.uni_muenster.imi.fhirFacade.basex.BaseXQueries
-import de.uni_muenster.imi.fhirFacade.basex.generator.XPathMapper.mapPathToXPath
-import de.uni_muenster.imi.fhirFacade.fhir.getSearchParameterMap
-import de.uni_muenster.imi.fhirFacade.fhir.helper.PathMapUtil
-import de.uni_muenster.imi.fhirFacade.fhir.helper.SignificanceHelper
+import de.unimuenster.imi.medic.basex.BaseXQueries
+import de.unimuenster.imi.medic.basex.generator.XPathMapper.mapPathToXPath
+import de.unimuenster.imi.medic.fhir.getSearchParameterMap
+import de.unimuenster.imi.medic.fhir.helper.PathMapUtil
+import de.unimuenster.imi.medic.fhir.helper.SignificanceHelper
 import org.apache.commons.lang.StringUtils
 import kotlin.collections.HashMap
 
@@ -256,7 +256,8 @@ class QueryGenerator {
         //Handle modifiers separately
         if (theParam.modifier != null) {
             when (theParam.modifier.name) {
-                "TEXT" -> { return QuerySnippets.TokenSnippets.textSearch(paramName, theParam.value)}
+                "TEXT" -> { return QuerySnippets.TokenSnippets.textSearch(paramName, theParam.value)
+                }
                 "NOT" -> {queryModifier = "(fn:not(#REPLACE))"}
                 "OF_TYPE" -> {
                     //All three have to be present

@@ -1,11 +1,11 @@
-package de.uni_muenster.imi.fhirFacade.fhir
+package de.unimuenster.imi.medic.fhir
 
 import ca.uhn.fhir.jpa.searchparam.SearchParameterMap
 import ca.uhn.fhir.model.api.IQueryParameterType
 import ca.uhn.fhir.rest.param.DateParam
 import ca.uhn.fhir.rest.param.DateRangeParam
-import de.uni_muenster.imi.fhirFacade.fhir.helper.encodeFromResource
-import de.uni_muenster.imi.fhirFacade.utils.UUIDHelper
+import de.unimuenster.imi.medic.fhir.helper.encodeFromResource
+import de.unimuenster.imi.medic.utils.UUIDHelper
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
 import org.hl7.fhir.r4.model.IdType
