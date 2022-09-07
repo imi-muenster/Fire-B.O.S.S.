@@ -5,7 +5,7 @@ import ca.uhn.fhir.model.api.IQueryParameterType
 import ca.uhn.fhir.rest.param.DateParam
 import ca.uhn.fhir.rest.param.DateRangeParam
 import de.unimuenster.imi.medic.fhir.helper.encodeFromResource
-import de.unimuenster.imi.medic.utils.UUIDHelper
+import de.unimuenster.imi.medic.fhir.helper.UUIDHelper
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.formats.ParserType
 import org.hl7.fhir.r4.model.IdType
