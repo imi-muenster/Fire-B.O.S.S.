@@ -16,6 +16,7 @@ import java.net.http.HttpResponse
 private val log = KotlinLogging.logger {}
 
 fun main() {
+    createAllDatabases()
     fillServer()
 }
 
