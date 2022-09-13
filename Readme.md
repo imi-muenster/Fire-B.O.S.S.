@@ -104,49 +104,49 @@ Put them into `src/main/resources/fhirResources/example-json` and run the main m
 
 
 ## REST
-FhirFacade is carefully modeled to conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search](http://hl7.org/fhir/search.html) specifications.
-To understand how this facade operates read those specifications throughout.
+FHIR B.O.S.S is carefully modeled to conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search](http://hl7.org/fhir/search.html) specifications.
+To understand how this server operates read those specifications throughout.
 
 ### Capabilities 
-The following FHIR Operations are currently supported: 
+#### REST API
+| Parameter    | Limitations                               |
+|--------------|-------------------------------------------|
+| read         | -                                         |
+| vread        | -                                         |
+| update       | -                                         |
+| patch        | - Only XML-Patch and JSON-Patch supported |
+| delete       | -                                         |
+| create       | -                                         |
+| capabilities | -                                         |
+| history      | -                                         |
 
-- read
-- vread
-- update
-- patch 
-    - Only XML-Patch and JSON-Patch
-- delete
-- create
-- capabilities
-- history
+#### Searchparameter types 
+|Parameter          |Limitations                                                                |
+|-------------------|---------------------------------------------------------------------------|
+|Number             |-                                                                          |
+|Date / DateTime    |-                                                                          |
+|String             |-                                                                          |
+|Token              |-                                                                          |
+|Reference          |- Only limited chaining capabilities supported. Will be updated in the future<br>- Chained Query on versioned references not supported yet<br>- Hierarchy not supported by server: `:above` and `:below` not implemented|
+|Composite          |-                                                                          |
+|Quantity           |- No unit conversion currently implemented                                 | 
+|URI|-|
+|Special            |- `_filter` parameter is not supported yet                                 |
 
-Additionally these Search operations are supported: 
-- Number
-- Date / DateTime
-- String
-- Token
-- Reference 
-    - Only limited chaining capabilities supported. Will be updated in the future
-    - Chained Query on versioned references not supported yet 
-    - Hierarchy not supported by server: `:above` and `:below` not implemented
-- Composite
-- Quantity
-    - No unit conversion currently implemented
-- URI
-as well as: 
-- near on Location
-- `_id`
-- `_lastUpdated`
-- `_tag`
-- `_profile`
-- `_security`
-- `_source`
-- `_text`
-- `_content`
-- `_list` 
-- `_has` 
-    - `_has` chaining not supported yet
-- `_type`
+#### Searchparameters on all resourcetypes
+| Parameter      | Limitations                       |
+|----------------|-----------------------------------|
+| `_id`          | -                                 |
+| `_lastUpdated` | -                                 |
+| `_tag`         | -                                 |
+| `_profile`     | -                                 |
+| `_security`    | -                                 |
+| `_source`      | -                                 |
+| `_text`        | -                                 |
+| `_content`     | -                                 |
+| `_list`        | -                                 |
+| `_has`         | `_has` chaining not supported yet |
+| `_type`        | -                                 |
 
 Note that the search result parameters are not yet implemented. They will be realised in a possible future version of this Server.
 Assume that every operation that is not limited in the above capabilities is fully conformant with the FHIR specifications. If you notice a flawed behaviour, feel free to contact us. 
