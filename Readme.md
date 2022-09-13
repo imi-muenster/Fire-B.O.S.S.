@@ -99,7 +99,9 @@ The Server will be accessible from the URL `http://[base]/fhir/...`, with `[base
 ## Setup test server
 To setup a test server one can easily use a local BaseX instance. Look [here](https://basex.org/) how to set it up correctly.
 After that adjust the `default.properties` file and start the FHIR facade locally. Download the example FHIR resources in JSON format from the [official](https://hl7.org/fhir/downloads.html) website.
-Put them into `src/main/resources/fhirResources/example-json` and run the main method of `BaseXPreparationUtil` in `src/main/kotlin/utils` to add all of them to the BaseX database.
+Put them into `src/main/resources/fhirResources/example-json` and run the main method of `BaseXPreparationUtil` in `src/main/kotlin/utils`. This will use the facade to create all necessary databases and create all example resources on the local BaseX instance. 
+
+
 
 ## REST
 FhirFacade is carefully modeled to conform to the [FHIR RESTful API](http://hl7.org/fhir/http.html) and the [FHIR Search](http://hl7.org/fhir/search.html) specifications.
