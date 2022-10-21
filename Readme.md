@@ -70,8 +70,7 @@ let $result :=
 return $result
 ```
 the query can be reperformed while not being dependent on the date. The correct range is calculated while performing the query thus making it easier to automate the complete querying process. 
-
-To be able to perform queries  
+ 
 ## Setup 
 
 To start the Server create a `default.properties` file within a folder `settings` in the root of the project. The file has to contain the following information: 
