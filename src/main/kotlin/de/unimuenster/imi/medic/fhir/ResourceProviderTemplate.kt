@@ -106,6 +106,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
     private fun createWithExistingId(@ResourceParam theResource: String): MethodOutcome {
         val decodedResource = decodeFromString(theResource)
         return if (decodedResource != null) {
+            decodedResource.updateAndSetId()
             baseX.postResourceToBaseX(decodedResource)
 
             MethodOutcome().apply {

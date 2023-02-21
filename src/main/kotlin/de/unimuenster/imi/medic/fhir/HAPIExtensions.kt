@@ -51,6 +51,12 @@ fun IBaseResource.generateAndSetNewId() {
     this.meta.lastUpdated = Date(System.currentTimeMillis())
 }
 
+fun IBaseResource.updateAndSetId() {
+    this.setId(IdType(this.fhirType(), this.idElement.valueAsString, "1"))
+    this.meta.versionId = "1"
+    this.meta.lastUpdated = Date(System.currentTimeMillis())
+}
+
 fun IBaseResource.hasVersionIdPart(): Boolean {
     return this.idElement!!.hasVersionIdPart()
 }
