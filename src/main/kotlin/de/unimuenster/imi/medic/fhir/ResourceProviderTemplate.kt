@@ -80,7 +80,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                 }
             }
         } else {
-            return createWithExistingId(theResource)
+            return createWithExistingId(theResource, theId)
         }
     }
 
@@ -102,21 +102,13 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
         }
     }
 
-    @Create
-    private fun createWithExistingId(@ResourceParam theResource: String): MethodOutcome {
-        val decodedResource = decodeFromString(theResource)
-        return if (decodedResource != null) {
-            decodedResource.updateAndSetId()
-            baseX.postResourceToBaseX(decodedResource)
+    private fun createWithExistingId(theResource: String, theId: IdType): MethodOutcome {
+        val type = theResource.substringAfter("<").substringBefore(">")
+        baseX.postStringToBaseX(theResource, type, theId)
 
-            MethodOutcome().apply {
-                id = decodedResource.idElement
-                created = true
-            }
-        } else {
-            MethodOutcome().apply {
-                created = false
-            }
+        return MethodOutcome().apply {
+            id = IdType(theResource.substringAfter("id value=\"").substringBefore("\">"))
+            created = true
         }
     }
 

@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import org.basex.api.client.ClientSession
 import org.basex.core.BaseXException
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.IdType
 
 
 class BaseX(SETTINGS: Properties) {
@@ -45,6 +46,21 @@ class BaseX(SETTINGS: Properties) {
 
             session.add("${id}_$version", it.byteInputStream())
         }
+    }
+
+    fun postStringToBaseX(resource: String, type: String, id: IdType)  {
+        val idPart = id.idPart
+        val version = id.versionIdPart ?: "1"
+
+        try {
+            session.execute("open $type")
+        } catch (e: BaseXException) {
+            logger.info("Database was not found. Creating it.")
+            session.execute("create db $type")
+            session.execute("open $type")
+        }
+
+        session.add("${idPart}_$version", resource.byteInputStream())
     }
 
     fun postResourceToHistory(resource: IBaseResource) {
