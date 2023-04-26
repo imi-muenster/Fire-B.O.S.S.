@@ -93,7 +93,7 @@ to
 <Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" relaxedQueryChars='^{}[]|&quot;' />
 ```
 
-The Server will be accessible from the URL `http://[base]/fhir/...`, with `[base]` being dependent on the tomcat deployment path.
+The server will be accessible from the URL `http://[base]/fhir/...`, with `[base]` being dependent on the tomcat deployment path.
 
 **Important:** FHIR B.O.S.S. itself lacks security features, there is no implementation of authentication protocols built in. Do not use the server in its current form with sensitive patient data, unless you are able to ensure that no unauthorized user has access to your server.
 
@@ -112,46 +112,46 @@ FHIR B.O.S.S is carefully modeled to conform to the [FHIR RESTful API](http://hl
 To understand how this server operates read those specifications throughout.
 
 ### REST API
-| Parameter    | Limitations                               |
-|--------------|-------------------------------------------|
-| read         | -                                         |
-| vread        | -                                         |
-| update       | -                                         |
-| patch        | - Only XML-Patch and JSON-Patch supported |
-| delete       | -                                         |
-| create       | -                                         |
-| capabilities | -                                         |
-| history      | -                                         |
+| Parameter    | Support (Limitations)                        |
+|--------------|----------------------------------------------|
+| read         | ✅️                                           |
+| vread        | ✅️                                           |
+| update       | ✅️                                           |
+| patch        | ✅️ (only XML-Patch and JSON-Patch supported) |
+| delete       | ✅️                                           |
+| create       | ✅️                                           |
+| capabilities | ✅️                                           |
+| history      | ✅️                                           |
 
 ### Searchparameter types 
-|Parameter          |Limitations                                                                |
-|-------------------|---------------------------------------------------------------------------|
-|Number             |-                                                                          |
-|Date / DateTime    |-                                                                          |
-|String             |-                                                                          |
-|Token              |-                                                                          |
-|Reference          |- Only limited chaining capabilities supported. Will be updated in the future<br>- Chained Query on versioned references not supported yet<br>- Hierarchy not supported by server: `:above` and `:below` not implemented|
-|Composite          |-                                                                          |
-|Quantity           |- No unit conversion currently implemented                                 | 
-|URI|-|
-|Special            |- `_filter` parameter is not supported yet                                 |
+| Parameter       | Limitations                                                                                                                                                                                                              |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Number          | ✅                                                                                                                                                                                                                        |
+| Date / DateTime | ✅                                                                                                                                                                                                                        |
+| String          | ✅                                                                                                                                                                                                                        |
+| Token           | ✅                                                                                                                                                                                                                        |
+| Reference       | 🆗 Only limited chaining capabilities supported. Will be updated in the future<br>- Chained Query on versioned references not supported yet<br>- Hierarchy not supported by server: `:above` and `:below` not implemented |
+| Composite       | ✅                                                                                                                                                                                                                        |
+| Quantity        | 🆗 No unit conversion currently implemented                                                                                                                                                                               | 
+| URI             | ✅                                                                                                                                                                                                                        |
+| Special         | ❌ `_filter` parameter is not supported yet                                                                                                                                                                               |
 
 ### Searchparameters on all resourcetypes
-| Parameter      | Limitations                       |
-|----------------|-----------------------------------|
-| `_id`          | -                                 |
-| `_lastUpdated` | -                                 |
-| `_tag`         | -                                 |
-| `_profile`     | -                                 |
-| `_security`    | -                                 |
-| `_source`      | -                                 |
-| `_text`        | -                                 |
-| `_content`     | -                                 |
-| `_list`        | -                                 |
-| `_has`         | `_has` chaining not supported yet |
-| `_type`        | -                                 |
+| Parameter      | Limitations                         |
+|----------------|-------------------------------------|
+| `_id`          | ✅                                   |
+| `_lastUpdated` | ✅                                   |
+| `_tag`         | ✅                                   |
+| `_profile`     | ✅                                   |
+| `_security`    | ✅                                   |
+| `_source`      | ✅                                   |
+| `_text`        | ✅                                   |
+| `_content`     | ✅                                   |
+| `_list`        | ✅                                   |
+| `_has`         | ❌ `_has` chaining not supported yet |
+| `_type`        | ✅                                   |
 
-Note that the search result parameters are not yet implemented. They will be realised in a possible future version of this Server.
+Note that the search result parameters are not yet implemented. They will be realised in a possible future version of this server.
 Assume that every operation that is not limited in the above capabilities is fully conformant with the FHIR specifications. If you notice a flawed behaviour, feel free to contact us. 
 
 
