@@ -80,7 +80,7 @@ basex.port=
 basex.username=""
 basex.password=""
 ```
-Build the project with the gradle commands `clean build` to create a .war file under `build/libs/fhirBoss.war`. Deploy the file on a Tomcat server.
+Build the project with the gradle commands `./gradlew clean build` to create a .war file under `build/libs/fhirBoss.war`. Deploy the file on a Tomcat server.
 
 Adjust the server.xml configuration to allow certain query characters.
 

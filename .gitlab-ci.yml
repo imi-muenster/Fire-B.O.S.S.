@@ -1,0 +1,30 @@
+image: gradle:7.6.0-jdk11-alpine
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - GRADLE_USER_HOME="$(pwd)/.gradle"
+  - export GRADLE_USER_HOME
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dhttp.proxyHost=wwwproxy.uni-muenster.de -Dhttp.proxyPort=3128 -Dhttps.proxyHost=wwwproxy.uni-muenster.de -Dhttps.proxyPort=3128 -Dhttps.nonProxyHosts=localhost,127.0.0.1,0.0.0.0,.wwu.de,.uni-muenster.de,.wwu.io,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16"
+  HTTP_PROXY: "http://wwwproxy.uni-muenster.de:3128"
+  HTTPS_PROXY: "http://wwwproxy.uni-muenster.de:3128"
+  NO_PROXY: "localhost,127.0.0.1,0.0.0.0,.wwu.de,.uni-muenster.de,.wwu.io,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16"
+
+build:
+  stage: build
+  tags:
+    - docker
+  script:
+    - gradle clean build
+  artifacts:
+    paths:
+      - build/libs/*.jar
+  only:
+    - master
+
+
+
