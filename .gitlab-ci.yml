@@ -24,7 +24,7 @@ build:
     paths:
       - build/libs/*.jar
   only:
-    - master
+    - main
 
 
 
