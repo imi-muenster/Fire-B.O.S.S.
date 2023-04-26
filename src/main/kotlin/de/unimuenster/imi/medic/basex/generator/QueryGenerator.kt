@@ -13,6 +13,7 @@ import de.unimuenster.imi.medic.fhir.helper.PathMapUtil
 import de.unimuenster.imi.medic.fhir.helper.SignificanceHelper
 import org.apache.commons.lang.StringUtils
 import kotlin.collections.HashMap
+import ca.uhn.fhir.rest.param.ParamPrefixEnum.*
 
 class QueryGenerator {
     //TODO: Create Error code register
@@ -34,19 +35,20 @@ class QueryGenerator {
         return query
     }
 
-    fun getHistoryForType(parameterMap: SearchParameterMap, pathMap: HashMap<String, String>, fhirType: String): String {
+    fun getHistoryForType(parameterMap: SearchParameterMap, pathMap: Map<String, String>, fhirType: String): String {
         val searchParameterMap = handleSearchParameterMap(parameterMap.getSearchParameterMap(), pathMap)
 
         return QuerySnippets.serverHistoryResourcePart(fhirType)
             .replace("#OPTIONALSEARCHPARAMETERS", searchParameterMap)
     }
 
-    private fun handleSearchParameterMap(theMap: HashMap<String, List<List<IQueryParameterType>>>,
-                                         pathMap: HashMap<String, String>
+    private fun handleSearchParameterMap(
+        theMap: Map<String, List<List<IQueryParameterType>>>,
+        pathMap: Map<String, String>
     ): String {
         return buildString {
             for ((searchParam, orList) in theMap) {
-                for(andList in orList) {
+                for (andList in orList) {
                     val path = mapPathToXPath(pathMap[searchParam]!!)
                     append(handleListEntry(searchParam, path, andList))
                 }
@@ -55,75 +57,46 @@ class QueryGenerator {
     }
 
     private fun handleListEntry(paramName: String, paramPath: String, theList: List<IQueryParameterType>): String {
-            val result = theList.joinToString(" or ", "where(", ")") {
-                handleParameter(it, paramName)
-            }
+        val result = theList.joinToString(" or ", "where(", ")") {
+            handleParameter(it, paramName)
+        }
 
-            return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
-                "#SNIPPETS", result
-            )
+        return QuerySnippets.parameterTemplate(paramName, paramPath).replace(
+            "#SNIPPETS", result
+        )
     }
 
     private fun handleParameter(theParam: IQueryParameterType, paramName: String): String {
         return when (paramName) {
             //handle special parameters
-            "_content" -> {
-                handleContentParam(theParam as StringParam, paramName)
-            }
-            "_filter" -> {
-                handleFilterParam(theParam as StringParam)
-            }
-            "_list" -> {
-                handleListParam(theParam as StringParam, paramName)
-            }
-            "_has" -> {
-                handleHasParam(theParam as HasParam, paramName)
-            }
-            "_text" -> {
-                handleTextParam(theParam as StringParam, paramName)
-            }
+            "_content" -> handleContentParam(theParam as StringParam, paramName)
+            "_filter" -> handleFilterParam(theParam as StringParam)
+            "_list" -> handleListParam(theParam as StringParam, paramName)
+            "_has" -> handleHasParam(theParam as HasParam, paramName)
+            "_text" -> handleTextParam(theParam as StringParam, paramName)
             //handle base parameters
-            else -> {
-                handleBaseParameter(theParam, paramName)
-            }
+            else -> handleBaseParameter(theParam, paramName)
         }
     }
 
     private fun handleBaseParameter(theParam: IQueryParameterType, paramName: String): String {
+        //Does not appear in any ResourceProvider
         return when (theParam::class.java) {
-            NumberParam::class.java -> {
-                handleNumberParam(theParam as NumberParam, paramName)
-            }
-            DateParam::class.java -> {
-                handleDateParam(theParam as DateParam, paramName)
-            }
-            DateRangeParam::class.java -> {
-                "" //Does not appear in any ResourceProvider
-            }
-            StringParam::class.java -> {
-                handleStringParam(theParam as StringParam, paramName)
-            }
-            TokenParam::class.java -> {
-                handleTokenParam(theParam as TokenParam, paramName)
-            }
-            ReferenceParam::class.java -> {
-                handleReferenceParam(theParam as ReferenceParam, paramName)
-            }
-            CompositeParam::class.java -> {
-                handleCompositeParam(theParam as CompositeParam<IQueryParameterType, IQueryParameterType>, paramName)
-            }
-            QuantityParam::class.java -> {
-                handleQuantityParam(theParam as QuantityParam, paramName)
-            }
-            UriParam::class.java -> {
-                handleURIParam(theParam as UriParam, paramName)
-            }
-            SpecialParam::class.java -> {
-                handleSpecialParam(theParam as SpecialParam, paramName)
-            }
-            else -> {
-                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
-            }
+            NumberParam::class.java -> handleNumberParam(theParam as NumberParam, paramName)
+            DateParam::class.java -> handleDateParam(theParam as DateParam, paramName)
+            DateRangeParam::class.java -> ""
+            StringParam::class.java -> handleStringParam(theParam as StringParam, paramName)
+            TokenParam::class.java -> handleTokenParam(theParam as TokenParam, paramName)
+            ReferenceParam::class.java -> handleReferenceParam(theParam as ReferenceParam, paramName)
+            CompositeParam::class.java -> handleCompositeParam(
+                theParam as CompositeParam<IQueryParameterType, IQueryParameterType>,
+                paramName
+            )
+
+            QuantityParam::class.java -> handleQuantityParam(theParam as QuantityParam, paramName)
+            UriParam::class.java -> handleURIParam(theParam as UriParam, paramName)
+            SpecialParam::class.java -> handleSpecialParam(theParam as SpecialParam, paramName)
+            else -> throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
     }
 
@@ -139,8 +112,9 @@ class QueryGenerator {
      */
 
     private fun handleFilterParam(theParam: StringParam): String {
-        throw NotImplementedOperationException(Msg.code(501) + theParam.toString() +
-                ". Please use the standard search syntax.")
+        throw NotImplementedOperationException(
+            Msg.code(501) + theParam.toString() + ". Please use the standard search syntax."
+        )
     }
 
     private fun handleContentParam(theParam: StringParam, paramName: String): String {
@@ -155,7 +129,8 @@ class QueryGenerator {
         if (theParam.parameterName == null ||
             theParam.parameterValue == null ||
             theParam.referenceFieldName == null ||
-            theParam.targetResourceType == null) {
+            theParam.targetResourceType == null
+        ) {
             throw InvalidRequestException(Msg.code(1235) + "Incomplete _has Parameter. Please correct it. $theParam")
         }
         if (theParam.parameterName.contains("_has")) {
@@ -184,70 +159,53 @@ class QueryGenerator {
     private fun handleStringParam(theParam: StringParam, paramName: String): String {
         return if (theParam.isContains) {
             QuerySnippets.StringSnippets.stringContains(paramName, theParam.value)
-            } else if (theParam.isExact) {
+        } else if (theParam.isExact) {
             QuerySnippets.StringSnippets.stringExact(paramName, theParam.value)
-            } else {
+        } else {
             QuerySnippets.StringSnippets.stringStart(paramName, theParam.value)
-            }
+        }
     }
 
     private fun handleNumberParam(theParam: NumberParam, paramName: String): String {
-        when (theParam.prefix) {
-            ParamPrefixEnum.APPROXIMATE -> {
+        return when (theParam.prefix) {
+            APPROXIMATE -> {
                 val range = SignificanceHelper.getSignificantRange(theParam)
-                return QuerySnippets.NumberSnippets.APPROXIMATE(paramName, range)
+                QuerySnippets.NumberSnippets.APPROXIMATE(paramName, range)
             }
-            ParamPrefixEnum.GREATERTHAN -> {
-                return QuerySnippets.NumberSnippets.GREATERTHAN(paramName, theParam)
-            }
-            ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
-                return QuerySnippets.NumberSnippets.GREATERTHAN_OR_EQUALS(paramName, theParam)
-            }
-            ParamPrefixEnum.LESSTHAN -> {
-                return QuerySnippets.NumberSnippets.LESSTHAN(paramName, theParam)
-            }
-            ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
-                return QuerySnippets.NumberSnippets.LESSTHAN_OR_EQUALS(paramName, theParam)
-            }
-            ParamPrefixEnum.EQUAL, null /* e.g. ?[parameter]=100 */ -> {
+
+            GREATERTHAN -> QuerySnippets.NumberSnippets.GREATERTHAN(paramName, theParam)
+            GREATERTHAN_OR_EQUALS -> QuerySnippets.NumberSnippets.GREATERTHAN_OR_EQUALS(paramName, theParam)
+            LESSTHAN -> QuerySnippets.NumberSnippets.LESSTHAN(paramName, theParam)
+            LESSTHAN_OR_EQUALS -> QuerySnippets.NumberSnippets.LESSTHAN_OR_EQUALS(paramName, theParam)
+            EQUAL, null /* e.g. ?[parameter]=100 */ -> {
                 val range = SignificanceHelper.getSignificantRange(theParam)
-                return QuerySnippets.NumberSnippets.EQUAL(paramName, range)
+                QuerySnippets.NumberSnippets.EQUAL(paramName, range)
             }
-            ParamPrefixEnum.NOT_EQUAL -> {
+
+            NOT_EQUAL -> {
                 val range = SignificanceHelper.getSignificantRange(theParam)
-                return QuerySnippets.NumberSnippets.NOT_EQUAL(paramName, range)
+                QuerySnippets.NumberSnippets.NOT_EQUAL(paramName, range)
             }
-            else -> {
-                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
-            }
+
+            else -> throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
     }
 
     private fun handleDateParam(theParam: DateParam, paramName: String): String {
         //TODO: Add logic for Time Zones
-        when (theParam.prefix) {
-            ParamPrefixEnum.GREATERTHAN -> {
-                return QuerySnippets.DateSnippets.GREATERTHAN(paramName, theParam.valueAsString)
-            }
-            ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
-                return QuerySnippets.DateSnippets.GREATERTHAN_OR_EQUALS(paramName, theParam.valueAsString)
-            }
-            ParamPrefixEnum.LESSTHAN -> {
-                return QuerySnippets.DateSnippets.LESSTHAN(paramName, theParam.valueAsString)
-            }
-            ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
-                return QuerySnippets.DateSnippets.LESSTHAN_OR_EQUALS(paramName, theParam.valueAsString)
-            }
-            ParamPrefixEnum.EQUAL, null /* e.g. ?[parameter]=2022-01-01 */ -> {
-                //Equal prefix creates two lists (possible error in HAPI?); Can be ignored as this just creates redundant conditions
-                return QuerySnippets.DateSnippets.EQUAL(paramName, theParam.valueAsString)
-            }
-            ParamPrefixEnum.NOT_EQUAL -> {
-                return QuerySnippets.DateSnippets.NOT_EQUAL(paramName, theParam.valueAsString)
-            }
-            else -> {
-                throw InvalidRequestException(Msg.code(1235) + theParam.toString())
-            }
+        //Equal prefix creates two lists (possible error in HAPI?); Can be ignored as this just creates redundant conditions
+        return when (theParam.prefix) {
+            GREATERTHAN -> QuerySnippets.DateSnippets.GREATERTHAN(paramName, theParam.valueAsString)
+            GREATERTHAN_OR_EQUALS -> QuerySnippets.DateSnippets.GREATERTHAN_OR_EQUALS(paramName, theParam.valueAsString)
+            LESSTHAN -> QuerySnippets.DateSnippets.LESSTHAN(paramName, theParam.valueAsString)
+            LESSTHAN_OR_EQUALS -> QuerySnippets.DateSnippets.LESSTHAN_OR_EQUALS(paramName, theParam.valueAsString)
+            EQUAL, null /* e.g. ?[parameter]=2022-01-01 */ -> QuerySnippets.DateSnippets.EQUAL(
+                paramName,
+                theParam.valueAsString
+            )
+
+            NOT_EQUAL -> QuerySnippets.DateSnippets.NOT_EQUAL(paramName, theParam.valueAsString)
+            else -> throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
     }
 
@@ -256,9 +214,14 @@ class QueryGenerator {
         //Handle modifiers separately
         if (theParam.modifier != null) {
             when (theParam.modifier.name) {
-                "TEXT" -> { return QuerySnippets.TokenSnippets.textSearch(paramName, theParam.value)
+                "TEXT" -> {
+                    return QuerySnippets.TokenSnippets.textSearch(paramName, theParam.value)
                 }
-                "NOT" -> {queryModifier = "(fn:not(#REPLACE))"}
+
+                "NOT" -> {
+                    queryModifier = "(fn:not(#REPLACE))"
+                }
+
                 "OF_TYPE" -> {
                     //All three have to be present
                     if (theParam.system == null || !theParam.value.contains("|")) {
@@ -268,7 +231,10 @@ class QueryGenerator {
                     val (code, value) = theParam.value.split("|")
                     return QuerySnippets.TokenSnippets.searchOfType(paramName, system, code, value)
                 }
-                else -> {throw NotImplementedOperationException(Msg.code(501) + theParam.modifier.value)}
+
+                else -> {
+                    throw NotImplementedOperationException(Msg.code(501) + theParam.modifier.value)
+                }
             }
         }
 
@@ -276,8 +242,7 @@ class QueryGenerator {
         // [parameter]=[code]
         if (theParam.system == null && theParam.value != null) {
             query = QuerySnippets.TokenSnippets.searchForCode(paramName, theParam.value)
-        }
-        else if (theParam.system != null && theParam.value != null) {
+        } else if (theParam.system != null && theParam.value != null) {
             // [parameter]=[system]|[code]
             if (StringUtils.isNotBlank(theParam.system) && StringUtils.isNotBlank(theParam.value)) {
                 query = QuerySnippets.TokenSnippets.searchForCodeAndSystem(paramName, theParam.system, theParam.value)
@@ -289,12 +254,10 @@ class QueryGenerator {
             // [parameter]=[system]|
             else if (StringUtils.isNotBlank(theParam.system) && StringUtils.isBlank(theParam.value)) {
                 query = QuerySnippets.TokenSnippets.searchForSystem(paramName, theParam.system)
-            }
-            else {
+            } else {
                 throw InvalidRequestException(Msg.code(1235) + theParam.toString())
             }
-        }
-        else {
+        } else {
             throw InvalidRequestException(Msg.code(1235) + theParam.toString())
         }
         return queryModifier.replace("#REPLACE", query)
@@ -308,48 +271,38 @@ class QueryGenerator {
 
         val query = buildString {
             when (theParam.prefix) {
-                ParamPrefixEnum.EQUAL, null -> {
+                EQUAL, null -> {
                     val range = SignificanceHelper.getSignificantRange(theParam)
                     append(QuerySnippets.QuantitySnippets.EQUAL(paramName, range))
                 }
-                ParamPrefixEnum.NOT_EQUAL -> {
+
+                NOT_EQUAL -> {
                     val range = SignificanceHelper.getSignificantRange(theParam)
                     append(QuerySnippets.QuantitySnippets.NOT_EQUAL(paramName, range))
                 }
-                ParamPrefixEnum.GREATERTHAN -> {
-                    append(QuerySnippets.QuantitySnippets.GREATERTHAN(paramName, theParam))
-                }
-                ParamPrefixEnum.GREATERTHAN_OR_EQUALS -> {
-                    append(QuerySnippets.QuantitySnippets.GREATERTHAN_OR_EQUALS(paramName, theParam))
-                }
-                ParamPrefixEnum.LESSTHAN -> {
-                    append(QuerySnippets.QuantitySnippets.LESSTHAN(paramName, theParam))
-                }
-                ParamPrefixEnum.LESSTHAN_OR_EQUALS -> {
-                    append(QuerySnippets.QuantitySnippets.LESSTHAN_OR_EQUALS(paramName, theParam))
-                }
-                ParamPrefixEnum.APPROXIMATE -> {
+
+                GREATERTHAN -> append(QuerySnippets.QuantitySnippets.GREATERTHAN(paramName, theParam))
+                GREATERTHAN_OR_EQUALS -> append(
+                    QuerySnippets.QuantitySnippets.GREATERTHAN_OR_EQUALS(paramName, theParam)
+                )
+
+                LESSTHAN -> append(QuerySnippets.QuantitySnippets.LESSTHAN(paramName, theParam))
+                LESSTHAN_OR_EQUALS -> append(QuerySnippets.QuantitySnippets.LESSTHAN_OR_EQUALS(paramName, theParam))
+
+                APPROXIMATE -> {
                     val range = SignificanceHelper.getSignificantRange(theParam)
                     append(QuerySnippets.QuantitySnippets.APPROXIMATE(paramName, range))
                 }
-                ParamPrefixEnum.STARTS_AFTER -> {
-                    append(QuerySnippets.QuantitySnippets.STARTS_AFTER(paramName, theParam))
-                }
-                ParamPrefixEnum.ENDS_BEFORE -> {
-                    append(QuerySnippets.QuantitySnippets.ENDS_BEFORE(paramName, theParam))
-                }
-                else -> {
-                    throw InvalidRequestException(Msg.code(1235) + theParam.toString())
-                }
+
+                STARTS_AFTER -> append(QuerySnippets.QuantitySnippets.STARTS_AFTER(paramName, theParam))
+                ENDS_BEFORE -> append(QuerySnippets.QuantitySnippets.ENDS_BEFORE(paramName, theParam))
+                else -> throw InvalidRequestException(Msg.code(1235) + theParam.toString())
             }
             if (theParam.system != null && theParam.units != null) {
-                append(" and ${
-                    QuerySnippets.QuantitySnippets.searchForCodeAndSystem(
-                        paramName,
-                        theParam.units,
-                        theParam.system
-                    )
-                }")
+                append(" and ")
+                append(
+                    QuerySnippets.QuantitySnippets.searchForCodeAndSystem(paramName, theParam.units, theParam.system)
+                )
             }
             if (theParam.units != null && theParam.system == null) {
                 append(" and ${QuerySnippets.QuantitySnippets.searchForCodeWithoutSystem(paramName, theParam.units)}")
@@ -359,17 +312,10 @@ class QueryGenerator {
     }
 
     private fun handleURIParam(theParam: UriParam, paramName: String): String {
-        return if (theParam.qualifier != null) {
-            when (theParam.qualifier) {
-                UriParamQualifierEnum.ABOVE -> {
-                    QuerySnippets.UriSnippets.searchForUriAbove(paramName, theParam.value)
-                }
-                UriParamQualifierEnum.BELOW -> {
-                    QuerySnippets.UriSnippets.searchForUriBelow(paramName, theParam.value)
-                }
-            }
-        } else {
-            QuerySnippets.UriSnippets.searchForUriExact(paramName, theParam.value)
+        return when (theParam.qualifier) {
+            UriParamQualifierEnum.ABOVE -> QuerySnippets.UriSnippets.searchForUriAbove(paramName, theParam.value)
+            UriParamQualifierEnum.BELOW -> QuerySnippets.UriSnippets.searchForUriBelow(paramName, theParam.value)
+            null -> QuerySnippets.UriSnippets.searchForUriExact(paramName, theParam.value)
         }
     }
 
@@ -395,7 +341,7 @@ class QueryGenerator {
                 QuerySnippets.ReferenceSnippets.searchForId(paramName, theParam.idPart)
             }
 
-        //Search for ID with specific Type
+            //Search for ID with specific Type
         } else if (theParam.idPart != null && theParam.resourceType != null) {
             if (versionId != null) {
                 QuerySnippets.ReferenceSnippets.searchForVersionedIdAndType(
@@ -411,9 +357,10 @@ class QueryGenerator {
         }
     }
 
-    private fun handleCompositeParam(theParam: CompositeParam<IQueryParameterType, IQueryParameterType>, paramName: String): String {
-        return "( ${handleParameter(theParam.leftValue, paramName)} and ${handleParameter(theParam.rightValue, paramName)} )"
-    }
+    private fun handleCompositeParam(
+        theParam: CompositeParam<IQueryParameterType, IQueryParameterType>,
+        paramName: String
+    ) = "( ${handleParameter(theParam.leftValue, paramName)} and ${handleParameter(theParam.rightValue, paramName)} )"
 
     private fun handleSpecialParam(theParam: SpecialParam, paramName: String): String {
         //Only special Param in R4 is "near" for Location
