@@ -63,8 +63,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
                     throw ResourceVersionConflictException("${Msg.code(632)} Expected version $resourceId")
                 }
 
-                val newVersionNumber =
-                    "${availableResource.idElement.versionIdPart.toInt() + 1}"
+                val newVersionNumber = "${availableResource.idElement.versionIdPart.toInt() + 1}"
                 decodedResource.setNewVersion(newVersionNumber)
 
                 delete(IdType(availableResource.idElement.idPart))
@@ -119,9 +118,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
 
             if (availableResource != null) {
                 baseX.postResourceToHistory(availableResource)
-                baseX.executeXQuery(
-                    BaseXQueries.deleteById(this.fhirType, theId.idPart)
-                )
+                baseX.executeXQuery(BaseXQueries.deleteById(this.fhirType, theId.idPart))
             } else {
                 throw ResourceNotFoundException(Msg.code(634) + "No Resource for ID available.")
             }
@@ -214,9 +211,7 @@ abstract class ResourceProviderTemplate<T : IBaseResource>(private val resourceT
 
     private fun getResourceForId(theId: IdType): IBaseResource? {
         val result = decodeQueryResults(
-            baseX.executeXQuery(
-                BaseXQueries.getById(this.fhirType, theId.idPart)
-            )
+            baseX.executeXQuery(BaseXQueries.getById(this.fhirType, theId.idPart))
         )
         return if (result.isNotEmpty()) {
             //List should always contain only one element. Just to be safe
