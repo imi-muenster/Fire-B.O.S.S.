@@ -118,25 +118,17 @@ val baseDir = "${projectDir}"
 val packageBase = "de.unimuenster.imi.medic.generated"
 
 fun generateSources(version: String) {
-    val fhirContext: FhirContext
-    var packageSuffix = ""
-    if ("dstu2" == version) {
-        fhirContext = FhirContext.forDstu2()
-    } else if ("dstu3" == version) {
-        fhirContext = FhirContext.forDstu3()
-        packageSuffix = ".dstu3"
-    } else if ("r4" == version) {
-        fhirContext = FhirContext.forR4()
-        packageSuffix = ".r4"
-    } else if ("r5" == version) {
-        fhirContext = FhirContext.forR5()
-        packageSuffix = ".r5"
-    } else {
-        logger.error("Could not create context")
-        throw Exception()
+    val (fhirContext, packageSuffix) = when (version) {
+        "dstu2" -> FhirContext.forDstu2() to ""
+        "dstu3" -> FhirContext.forDstu3() to ".dstu3"
+        "r4" -> FhirContext.forR4() to ".r4"
+        "45" -> FhirContext.forR5() to ".r5"
+        else -> {
+            logger.error("Could not create context")
+            error("unknown fhir version '$version'")
+        }
     }
 
-    val baseResourceNames: MutableList<String> = mutableListOf()
 
     val p = Properties()
     try {
@@ -147,6 +139,7 @@ fun generateSources(version: String) {
 
     logger.info("Property file contains: {}", p)
 
+    val baseResourceNames: MutableList<String> = mutableListOf()
     for (next in p.keys) {
         val str = next as String
 
