@@ -39,6 +39,7 @@ class ServerProvider {
                     HTTPVerb.PUT -> {}
                     HTTPVerb.DELETE -> {}
                     HTTPVerb.PATCH -> {}
+                    else -> {}
                 }
 
             }

@@ -5,7 +5,7 @@ import ca.uhn.fhir.tinder.parser.ResourceGeneratorUsingModel
 import java.io.FileOutputStream
 
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.8.21"
     id("war")
 }
 
@@ -35,7 +35,7 @@ val hapi_version: String by project
 dependencies {
     // KOTLIN DEPENDENCIES //
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.21")
 
     // HAPI FHIR DEPENDENCIES //
     implementation("ca.uhn.hapi.fhir:hapi-fhir:$hapi_version")
