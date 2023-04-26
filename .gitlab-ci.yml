@@ -23,6 +23,7 @@ build:
   artifacts:
     paths:
       - build/libs/*.jar
+      - build/libs/*.war
   only:
     - main
 
