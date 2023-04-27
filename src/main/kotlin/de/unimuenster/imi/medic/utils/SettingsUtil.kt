@@ -9,11 +9,7 @@ class Properties @JvmOverloads constructor(context: ServletContext? = null, path
     private val props: java.util.Properties
     private val file: File
     init {
-        if (context != null) {
-            file = File(context.getRealPath(path))
-        } else {
-            file = File(path)
-        }
+        file = File(if (context != null) context.getRealPath(path) else { path })
         props = java.util.Properties()
         props.load(FileInputStream(file))
     }
@@ -27,11 +23,4 @@ class Properties @JvmOverloads constructor(context: ServletContext? = null, path
         ?: throw Exception("Cannot find setting '$key'! Please add to $file or VM properties!")
     }
 
-    fun getBool(key: String): Boolean {
-        return get(key).toBoolean()
-    }
-
-    fun getList(key: String): List<String> {
-        return get(key)?.split(",") ?: listOf()
-    }
 }

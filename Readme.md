@@ -124,20 +124,20 @@ To understand how this server operates read those specifications throughout.
 | history      | ✅️                                           |
 
 ### Searchparameter types 
-| Parameter       | Limitations                                                                                                                                                                                                              |
-|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Number          | ✅                                                                                                                                                                                                                        |
-| Date / DateTime | ✅                                                                                                                                                                                                                        |
-| String          | ✅                                                                                                                                                                                                                        |
-| Token           | ✅                                                                                                                                                                                                                        |
+| Parameter       | Support                                                                                                                                                                                                        |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Number          | ✅                                                                                                                                                                                                                         |
+| Date / DateTime | ✅                                                                                                                                                                                                                         |
+| String          | ✅                                                                                                                                                                                                                         |
+| Token           | ✅                                                                                                                                                                                                                         |
 | Reference       | 🆗 Only limited chaining capabilities supported. Will be updated in the future<br>- Chained Query on versioned references not supported yet<br>- Hierarchy not supported by server: `:above` and `:below` not implemented |
-| Composite       | ✅                                                                                                                                                                                                                        |
+| Composite       | ✅                                                                                                                                                                                                                         |
 | Quantity        | 🆗 No unit conversion currently implemented                                                                                                                                                                               | 
-| URI             | ✅                                                                                                                                                                                                                        |
-| Special         | ❌ `_filter` parameter is not supported yet                                                                                                                                                                               |
+| URI             | ✅                                                                                                                                                                                                                         |
+| Special         | ❌ `_filter` parameter is not supported yet                                                                                                                                                                                |
 
 ### Searchparameters on all resourcetypes
-| Parameter      | Limitations                         |
+| Parameter      | Support                             |
 |----------------|-------------------------------------|
 | `_id`          | ✅                                   |
 | `_lastUpdated` | ✅                                   |

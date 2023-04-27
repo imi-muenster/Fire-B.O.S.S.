@@ -55,10 +55,10 @@ class ServerProvider {
 
         val resourceParts = buildString {
             for (resType in getDBNames()) {
-                val pathMap: HashMap<String, String> = HashMap<String, String>().apply {
-                    put("_at", "${resType}.meta.lastUpdated")
-                    put("_since", "${resType}.meta.lastUpdated")
-                }
+                val pathMap = mapOf(
+                    "_at" to "${resType}.meta.lastUpdated",
+                    "_since" to "${resType}.meta.lastUpdated"
+                )
 
                 append(gen.getHistoryForType(paramMap, pathMap, resType))
             }
@@ -83,11 +83,11 @@ class ServerProvider {
 
     ): Bundle {
         val types = filterResourceTypes(theSearchForType)
-        val bundlesEntries: MutableList<BundleEntryComponent> = mutableListOf()
         val params = theRequestDetails.parameters.toMutableMap()
         params.remove("_type")
         val paramString = createParamString(params)
 
+        val bundlesEntries = mutableListOf<BundleEntryComponent>()
         for (type in types) {
             val baseURL = FhirServer.settings["baseURL"]
             val request = HttpRequest.newBuilder()
